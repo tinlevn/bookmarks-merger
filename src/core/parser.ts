@@ -221,6 +221,7 @@ export function parseNetscapeHtml(
           };
           rootFolders.push(defaultRoot);
         }
+        bookmark.folderPath = [defaultRoot.title];
         defaultRoot.bookmarks.push(bookmark);
       }
 

@@ -160,6 +160,23 @@ describe('Bookmark Parser', () => {
     expect(parsed.rootFolders[0].subfolders.length).toBe(0);
   });
 
+  it('handles top-level root bookmarks outside explicit folder headers', () => {
+    const rootBmHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<DL><p>
+    <DT><A HREF="https://toplevel.com">Top Level Bookmark</A>
+    <DT><H3>Folder A</H3>
+    <DL><p>
+        <DT><A HREF="https://a.com">Item A</A>
+    </DL><p>
+</DL><p>`;
+
+    const parsed = parseNetscapeHtml(rootBmHtml, 'f1', 'chrome');
+    expect(parsed.allBookmarks.length).toBe(2);
+    expect(parsed.allBookmarks.some((b) => b.url === 'https://toplevel.com')).toBe(true);
+    const topBm = parsed.allBookmarks.find((b) => b.url === 'https://toplevel.com');
+    expect(topBm?.folderPath).toEqual(['Bookmarks']);
+  });
+
   it('parses Chromium JSON format and handles corrupt JSON gracefully', () => {
     const jsonSample = JSON.stringify({
       roots: {
