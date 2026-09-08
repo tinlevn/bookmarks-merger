@@ -1,15 +1,23 @@
 import type { MergedFolderNode, UnifiedBookmark } from './types';
+import { escapeCsvSafe } from '../utils/security';
 
 /**
  * Escapes characters for HTML attributes and text content.
  */
 function escapeHtml(str: string): string {
-  return str
+  return (str || '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/**
+ * Strips newlines and null bytes before attribute interpolation to prevent tag breakage.
+ */
+function sanitizeAttr(str: string): string {
+  return escapeHtml((str || '').replace(/[\r\n\0]/g, ' '));
 }
 
 /**
@@ -32,9 +40,9 @@ export function serializeNetscapeHtml(rootFolders: MergedFolderNode[]): string {
     const attrs: string[] = [];
 
     const nowSec = Math.floor(Date.now() / 1000).toString();
-    attrs.push(`ADD_DATE="${folder.addDate || nowSec}"`);
+    attrs.push(`ADD_DATE="${sanitizeAttr(folder.addDate || nowSec)}"`);
     if (folder.lastModified) {
-      attrs.push(`LAST_MODIFIED="${folder.lastModified}"`);
+      attrs.push(`LAST_MODIFIED="${sanitizeAttr(folder.lastModified)}"`);
     }
     if (folder.toolbarFolder) {
       attrs.push('PERSONAL_TOOLBAR_FOLDER="true"');
@@ -48,12 +56,12 @@ export function serializeNetscapeHtml(rootFolders: MergedFolderNode[]): string {
 
     // Render bookmarks in this folder
     for (const bm of folder.bookmarks) {
-      const bmAttrs: string[] = [`HREF="${escapeHtml(bm.canonicalUrl)}"`];
+      const bmAttrs: string[] = [`HREF="${sanitizeAttr(bm.canonicalUrl)}"`];
       if (bm.addDate) {
-        bmAttrs.push(`ADD_DATE="${bm.addDate}"`);
+        bmAttrs.push(`ADD_DATE="${sanitizeAttr(bm.addDate)}"`);
       }
       if (bm.icon) {
-        bmAttrs.push(`ICON="${escapeHtml(bm.icon)}"`);
+        bmAttrs.push(`ICON="${sanitizeAttr(bm.icon)}"`);
       }
       lines.push(
         `${indent}    <DT><A ${bmAttrs.join(' ')}>${escapeHtml(bm.title)}</A>`
@@ -96,9 +104,9 @@ export function serializeCatchupHtml(
   ];
 
   for (const bm of missingBookmarks) {
-    const bmAttrs: string[] = [`HREF="${escapeHtml(bm.canonicalUrl)}"`];
-    if (bm.addDate) bmAttrs.push(`ADD_DATE="${bm.addDate}"`);
-    if (bm.icon) bmAttrs.push(`ICON="${escapeHtml(bm.icon)}"`);
+    const bmAttrs: string[] = [`HREF="${sanitizeAttr(bm.canonicalUrl)}"`];
+    if (bm.addDate) bmAttrs.push(`ADD_DATE="${sanitizeAttr(bm.addDate)}"`);
+    if (bm.icon) bmAttrs.push(`ICON="${sanitizeAttr(bm.icon)}"`);
     lines.push(`        <DT><A ${bmAttrs.join(' ')}>${escapeHtml(bm.title)}</A>`);
   }
 
@@ -109,23 +117,22 @@ export function serializeCatchupHtml(
 
 /**
  * Generates a downloadable CSV representation of the gap analysis matrix.
+ * Neutralizes CSV Formula Injection (CWE-1236).
  */
 export function serializeMatrixCsv(
   matrix: UnifiedBookmark[],
   fileHeaders: { id: string; label: string }[]
 ): string {
   const headers = ['URL', 'Title', 'Unified Folder', ...fileHeaders.map((f) => f.label)];
-  const escapeCsv = (val: string) => `"${(val || '').replace(/"/g, '""')}"`;
-
-  const rows: string[] = [headers.map(escapeCsv).join(',')];
+  const rows: string[] = [headers.map(escapeCsvSafe).join(',')];
 
   for (const bm of matrix) {
     const presentSet = new Set(bm.sourceFileIds);
     const row = [
-      escapeCsv(bm.canonicalUrl),
-      escapeCsv(bm.title),
-      escapeCsv(bm.unifiedFolderPath.join(' > ')),
-      ...fileHeaders.map((f) => (presentSet.has(f.id) ? '"YES"' : '"MISSING"')),
+      escapeCsvSafe(bm.canonicalUrl),
+      escapeCsvSafe(bm.title),
+      escapeCsvSafe(bm.unifiedFolderPath.join(' > ')),
+      ...fileHeaders.map((f) => escapeCsvSafe(presentSet.has(f.id) ? 'YES' : 'MISSING')),
     ];
     rows.push(row.join(','));
   }

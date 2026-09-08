@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { MergedFolderNode, ParsedBookmarkFile, UnifiedBookmark } from '../core/types';
 import { BrowserBadge } from './BrowserBadge';
+import { isSafeWebUrl } from '../utils/security';
 
 interface MergedTreeViewProps {
   rootFolders: MergedFolderNode[];
@@ -58,14 +59,18 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
 
   const renderBookmarkItem = (bm: UnifiedBookmark) => {
     const isCopied = copiedUrl === bm.canonicalUrl;
+    const safeWeb = isSafeWebUrl(bm.canonicalUrl);
+    const safeIcon =
+      bm.icon &&
+      (bm.icon.startsWith('data:image/') || isSafeWebUrl(bm.icon));
 
     return (
       <div
         key={bm.canonicalUrl}
-        className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-850 hover:bg-slate-800/50 group transition-colors text-xs"
+        className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-800/50 group transition-colors text-xs"
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {bm.icon ? (
+          {safeIcon ? (
             <img
               src={bm.icon}
               alt=""
@@ -79,15 +84,24 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
           )}
 
           <div className="min-w-0 flex-1 flex items-baseline gap-2">
-            <a
-              href={bm.canonicalUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-200 hover:text-indigo-400 font-medium truncate inline-block"
-              title={bm.title}
-            >
-              {bm.title}
-            </a>
+            {safeWeb ? (
+              <a
+                href={bm.canonicalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-200 hover:text-indigo-400 font-medium truncate inline-block"
+                title={bm.title}
+              >
+                {bm.title}
+              </a>
+            ) : (
+              <span
+                className="text-slate-300 font-medium truncate inline-block"
+                title={bm.title}
+              >
+                {bm.title}
+              </span>
+            )}
 
             <span className="font-mono text-[10px] text-slate-500 truncate hidden sm:inline-block">
               {bm.canonicalUrl}
@@ -116,7 +130,7 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
           <button
             type="button"
             onClick={() => copyUrl(bm.canonicalUrl)}
-            className="p-1 text-slate-500 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity rounded"
+            className="p-1 text-slate-500 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer"
             title="Copy URL"
           >
             {isCopied ? (
@@ -139,8 +153,17 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
       <div key={path} className="space-y-1">
         {/* Folder Header */}
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={!isCollapsed}
           onClick={() => toggleFolder(path)}
-          className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg cursor-pointer select-none transition-colors ${
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleFolder(path);
+            }
+          }}
+          className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg cursor-pointer select-none transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
             level === 0
               ? 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800'
               : 'hover:bg-slate-800/60'
@@ -210,14 +233,14 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
           <button
             type="button"
             onClick={expandAll}
-            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
           >
             Expand All
           </button>
           <button
             type="button"
             onClick={collapseAll}
-            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
           >
             Collapse All
           </button>

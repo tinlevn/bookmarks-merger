@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, Folder, ExternalLink } from 'lucide-react';
 import type { ConflictingLocation, UnifiedBookmark } from '../core/types';
+import { isSafeWebUrl } from '../utils/security';
 
 interface FolderConflictViewProps {
   conflicts: ConflictingLocation[];
@@ -48,6 +49,7 @@ export const FolderConflictView: React.FC<FolderConflictViewProps> = ({
         {conflicts.map((conflict) => {
           const unified = bookmarkMap.get(conflict.canonicalUrl);
           const unifiedPath = unified?.unifiedFolderPath.join(' / ') || 'Other Bookmarks';
+          const safeWeb = isSafeWebUrl(conflict.canonicalUrl);
 
           return (
             <div
@@ -60,15 +62,21 @@ export const FolderConflictView: React.FC<FolderConflictViewProps> = ({
                   <h4 className="text-sm font-medium text-slate-200">
                     {conflict.title}
                   </h4>
-                  <a
-                    href={conflict.canonicalUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 font-mono text-xs text-indigo-400 hover:underline mt-0.5"
-                  >
-                    {conflict.canonicalUrl}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  {safeWeb ? (
+                    <a
+                      href={conflict.canonicalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-mono text-xs text-indigo-400 hover:underline mt-0.5"
+                    >
+                      {conflict.canonicalUrl}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="font-mono text-xs text-slate-400 mt-0.5">
+                      {conflict.canonicalUrl}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium">

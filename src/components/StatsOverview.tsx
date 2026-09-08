@@ -109,8 +109,16 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
                     </p>
                   </div>
                   <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onSelectBrowserFilter(file.id)}
-                    className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 cursor-pointer hover:bg-amber-500/20 transition-colors group"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onSelectBrowserFilter(file.id);
+                      }
+                    }}
+                    className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 cursor-pointer hover:bg-amber-500/20 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors group"
                     title={`View ${stats.missingCount} missing links`}
                   >
                     <p className="text-[10px] uppercase tracking-wider text-amber-400 flex items-center justify-center gap-0.5">

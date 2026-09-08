@@ -5,7 +5,7 @@ import { parseBookmarkFile } from '../src/core/parser';
 import { analyzeBookmarkGaps } from '../src/core/analyzer';
 import { buildMergedTree } from '../src/core/merger';
 import { serializeNetscapeHtml, serializeCatchupHtml } from '../src/core/serializer';
-import type { MergeOptions } from '../src/core/types';
+import type { MergeOptions, ParsedBookmarkFile } from '../src/core/types';
 
 function printHelp() {
   console.log(`
@@ -80,7 +80,7 @@ async function main() {
 
   console.log(`\n\x1b[36mAnalyzing ${inputFiles.length} bookmark files...\x1b[0m\n`);
 
-  const parsedFiles = [];
+  const parsedFiles: ParsedBookmarkFile[] = [];
   for (const filePath of inputFiles) {
     if (!fs.existsSync(filePath)) {
       console.error(`\x1b[31mFile not found: ${filePath}\x1b[0m`);

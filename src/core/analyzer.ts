@@ -7,7 +7,8 @@ import type {
   UnifiedBookmark,
   UnifiedBookmarkOccurrence,
 } from './types';
-import { pickBestTitle } from './normalizer';
+import { normalizeUrl, pickBestTitle } from './normalizer';
+import { TOOLBAR_ROOT_NAMES, UNFILED_ROOT_NAMES, MOBILE_ROOT_NAMES } from './constants';
 
 /**
  * Normalizes folder path for hierarchy comparison and toolbar aliasing.
@@ -20,24 +21,12 @@ export function normalizeFolderPath(
 
   const result = [...path];
   if (unifyToolbars) {
-    const root = result[0].toLowerCase();
-    if (
-      root === 'bookmarks bar' ||
-      root === 'favorites bar' ||
-      root === 'bookmarks toolbar' ||
-      root === 'personal toolbar' ||
-      root === 'toolbar'
-    ) {
+    const root = result[0].toLowerCase().trim();
+    if (TOOLBAR_ROOT_NAMES.has(root)) {
       result[0] = 'Bookmarks Bar';
-    } else if (
-      root === 'other bookmarks' ||
-      root === 'other favorites' ||
-      root === 'unsorted bookmarks' ||
-      root === 'unfiled bookmarks' ||
-      root === 'unfiled'
-    ) {
+    } else if (UNFILED_ROOT_NAMES.has(root)) {
       result[0] = 'Other Bookmarks';
-    } else if (root === 'mobile bookmarks' || root === 'synced') {
+    } else if (MOBILE_ROOT_NAMES.has(root)) {
       result[0] = 'Mobile Bookmarks';
     }
   }
@@ -47,6 +36,7 @@ export function normalizeFolderPath(
 
 /**
  * Runs gap analysis and builds the diff presence matrix across all bookmark files.
+ * Re-normalizes URLs dynamically with active options so settings changes take immediate effect.
  */
 export function analyzeBookmarkGaps(
   files: ParsedBookmarkFile[],
@@ -64,14 +54,14 @@ export function analyzeBookmarkGaps(
     };
   }
 
-  // 1. Group bookmarks across all files by normalized URL
+  // 1. Group bookmarks across all files by dynamically normalized URL
   const urlGroups = new Map<string, UnifiedBookmarkOccurrence[]>();
   let totalRawItems = 0;
 
   for (const file of files) {
     for (const bm of file.allBookmarks) {
       totalRawItems++;
-      const norm = bm.normalizedUrl;
+      const norm = normalizeUrl(bm.url, options.normalize);
       if (!norm) continue;
 
       if (!urlGroups.has(norm)) {
@@ -98,7 +88,7 @@ export function analyzeBookmarkGaps(
 
   let overlapCount = 0;
 
-  for (const [canonicalUrl, occurrences] of urlGroups.entries()) {
+  for (let [canonicalUrl, occurrences] of urlGroups.entries()) {
     const presentFiles = Array.from(new Set(occurrences.map((o) => o.fileId)));
     const presentFileSet = new Set(presentFiles);
     const missingFileIds = allFileIds.filter((id) => !presentFileSet.has(id));
@@ -110,6 +100,14 @@ export function analyzeBookmarkGaps(
     const isSharedAll = presentFiles.length === files.length;
     const isExclusive = presentFiles.length === 1;
     const exclusiveFileId = isExclusive ? presentFiles[0] : undefined;
+
+    // Prefer https:// if enabled and any browser had https://
+    if (options.preferHttps && canonicalUrl.startsWith('http://')) {
+      const hasHttps = occurrences.some((o) => o.rawUrl.toLowerCase().startsWith('https://'));
+      if (hasHttps) {
+        canonicalUrl = `https://${canonicalUrl.slice(7)}`;
+      }
+    }
 
     // Determine the unified folder path
     // Prefer non-empty path, with toolbar taking precedence if enabled
@@ -169,11 +167,13 @@ export function analyzeBookmarkGaps(
     });
   }
 
-  // 2. Compute per-file gap stats
+  // 2. Compute per-file gap stats using dynamic normalization
   const perFileStats: Record<string, FileGapStats> = {};
 
   for (const file of files) {
-    const fileUrlSet = new Set(file.allBookmarks.map((b) => b.normalizedUrl));
+    const fileUrlSet = new Set(
+      file.allBookmarks.map((b) => normalizeUrl(b.url, options.normalize))
+    );
     const uniqueCount = fileUrlSet.size;
     const missingCount = totalUniqueUrls - uniqueCount;
 

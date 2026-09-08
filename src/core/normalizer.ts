@@ -1,4 +1,5 @@
 import type { NormalizeOptions } from './types';
+import { TRACKING_PARAMS, NAMED_HTML_ENTITIES } from './constants';
 
 export const DEFAULT_NORMALIZE_OPTIONS: NormalizeOptions = {
   stripTrackingParams: true,
@@ -8,32 +9,22 @@ export const DEFAULT_NORMALIZE_OPTIONS: NormalizeOptions = {
   lowercaseHost: true,
 };
 
-const TRACKING_PARAMS = new Set([
-  'utm_source',
-  'utm_medium',
-  'utm_campaign',
-  'utm_term',
-  'utm_content',
-  'utm_id',
-  'fbclid',
-  'gclid',
-  'gclsrc',
-  'dclid',
-  'msclkid',
-  'ref',
-  'ref_src',
-  'ref_url',
-  'mc_cid',
-  'mc_eid',
-  '_ga',
-  '_gl',
-  'yclid',
-  'wickedid',
-  'spm',
-  'scm',
-  'igshid',
-  'si',
-]);
+/**
+ * Robust, spec-compliant HTML entity decoder handling named, decimal, and hexadecimal entities.
+ */
+export function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/&[a-zA-Z]+;/g, (match) => NAMED_HTML_ENTITIES[match] ?? match)
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const code = parseInt(hex, 16);
+      return Number.isNaN(code) ? _ : String.fromCodePoint(code);
+    })
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = parseInt(dec, 10);
+      return Number.isNaN(code) ? _ : String.fromCodePoint(code);
+    });
+}
 
 /**
  * Normalizes a URL for robust deduplication across different browsers.
@@ -43,29 +34,39 @@ export function normalizeUrl(
   options: Partial<NormalizeOptions> = {}
 ): string {
   const opts = { ...DEFAULT_NORMALIZE_OPTIONS, ...options };
-  const trimmed = rawUrl.trim();
+  const trimmed = (rawUrl || '').trim();
 
   if (!trimmed) return '';
 
-  // Non-HTTP protocols (e.g. javascript:, chrome:, edge:, place:)
-  if (/^(javascript|chrome|edge|opera|about|data|file):/i.test(trimmed)) {
+  // Non-HTTP protocols (e.g. javascript:, chrome:, edge:, place:, file:, data:)
+  if (/^(javascript|chrome|edge|opera|about|data|file|view-source):/i.test(trimmed)) {
     return trimmed;
   }
 
   try {
     const urlObj = new URL(trimmed);
+    const protocol = urlObj.protocol.toLowerCase();
+
+    // Preserve non-hierarchical protocols (e.g. mailto:user@domain.com, urn:isbn:...)
+    // reconstructing them with // breaks the URI specification
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      return trimmed;
+    }
 
     // Protocol normalization
-    let protocol = urlObj.protocol.toLowerCase();
+    let finalProtocol = protocol;
     if (opts.ignoreProtocol && (protocol === 'http:' || protocol === 'https:')) {
-      protocol = 'https:';
+      finalProtocol = 'https:';
     }
 
     // Hostname normalization
     let host = opts.lowercaseHost ? urlObj.host.toLowerCase() : urlObj.host;
-    // Remove default ports
-    if ((protocol === 'http:' && urlObj.port === '80') || (protocol === 'https:' && urlObj.port === '443')) {
-      host = urlObj.hostname.toLowerCase();
+    // Remove standard default ports
+    if (
+      (finalProtocol === 'http:' && urlObj.port === '80') ||
+      (finalProtocol === 'https:' && urlObj.port === '443')
+    ) {
+      host = opts.lowercaseHost ? urlObj.hostname.toLowerCase() : urlObj.hostname;
     }
 
     // Pathname normalization
@@ -80,7 +81,8 @@ export function normalizeUrl(
     const searchParams = new URLSearchParams(urlObj.search);
     if (opts.stripTrackingParams) {
       for (const key of Array.from(searchParams.keys())) {
-        if (TRACKING_PARAMS.has(key.toLowerCase()) || key.toLowerCase().startsWith('utm_')) {
+        const lowerKey = key.toLowerCase();
+        if (TRACKING_PARAMS.has(lowerKey) || lowerKey.startsWith('utm_')) {
           searchParams.delete(key);
         }
       }
@@ -94,9 +96,9 @@ export function normalizeUrl(
     // Hash normalization
     const hash = opts.ignoreHash ? '' : urlObj.hash;
 
-    return `${protocol}//${host}${pathname}${search}${hash}`;
+    return `${finalProtocol}//${host}${pathname}${search}${hash}`;
   } catch {
-    // If URL parsing fails, fallback to basic trimmed lowercase comparison
+    // If URL parsing fails, fallback to basic trimmed trailing slash comparison
     let fallback = trimmed;
     if (opts.trimTrailingSlash && fallback.length > 1 && fallback.endsWith('/')) {
       fallback = fallback.replace(/\/+$/, '');
@@ -112,7 +114,7 @@ export function pickBestTitle(titles: string[], url: string): string {
   const cleanUrl = url.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   const valid = titles
-    .map((t) => (t || '').trim())
+    .map((t) => decodeHtmlEntities((t || '').trim()))
     .filter((t) => {
       if (!t) return false;
       const lower = t.toLowerCase();
@@ -122,7 +124,7 @@ export function pickBestTitle(titles: string[], url: string): string {
 
   if (valid.length === 0) {
     const rawNonEmpty = titles.find((t) => t && t.trim().length > 0);
-    return rawNonEmpty?.trim() || url;
+    return rawNonEmpty ? decodeHtmlEntities(rawNonEmpty.trim()) : url;
   }
 
   // Sort by length and quality (longer descriptive title preferred)

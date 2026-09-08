@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X, Sliders, Check } from 'lucide-react';
 import type { MergeOptions } from '../core/types';
 
@@ -15,6 +15,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   options,
   onChangeOptions,
 }) => {
+  // Listen for Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const toggleNormalize = (key: keyof MergeOptions['normalize']) => {
@@ -35,13 +49,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl space-y-5 p-6">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-base font-semibold text-slate-100">
+            <h3 id="settings-modal-title" className="text-base font-semibold text-slate-100">
               Merge & Normalization Settings
             </h3>
           </div>
@@ -49,7 +68,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors"
+            aria-label="Close settings"
+            className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -59,8 +79,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="space-y-4 text-xs">
           {/* Unify Toolbars */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.unifyToolbars}
             onClick={() => toggleOption('unifyToolbars')}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleOption('unifyToolbars');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <div>
               <p className="font-semibold text-slate-200">
@@ -83,8 +112,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Strip Tracking Query Params */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.normalize.stripTrackingParams}
             onClick={() => toggleNormalize('stripTrackingParams')}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleNormalize('stripTrackingParams');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <div>
               <p className="font-semibold text-slate-200">
@@ -109,8 +147,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Trim Trailing Slashes */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.normalize.trimTrailingSlash}
             onClick={() => toggleNormalize('trimTrailingSlash')}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleNormalize('trimTrailingSlash');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <div>
               <p className="font-semibold text-slate-200">
@@ -134,8 +181,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Prefer Informative Title */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.preferNonEmptyTitle}
             onClick={() => toggleOption('preferNonEmptyTitle')}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleOption('preferNonEmptyTitle');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <div>
               <p className="font-semibold text-slate-200">
@@ -156,10 +212,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
+          {/* Prefer HTTPS */}
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.preferHttps}
+            onClick={() => toggleOption('preferHttps')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleOption('preferHttps');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+          >
+            <div>
+              <p className="font-semibold text-slate-200">
+                Prefer HTTPS Upgrades
+              </p>
+              <p className="text-slate-400 mt-0.5">
+                If any browser has an <code className="text-indigo-300 font-mono">https://</code> version of a link, use HTTPS for the unified output.
+              </p>
+            </div>
+            <div
+              className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
+                options.preferHttps
+                  ? 'bg-indigo-600 border-indigo-500 text-white'
+                  : 'border-slate-700 bg-slate-900'
+              }`}
+            >
+              {options.preferHttps && <Check className="w-3.5 h-3.5" />}
+            </div>
+          </div>
+
           {/* Ignore Protocol differences */}
           <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={options.normalize.ignoreProtocol}
             onClick={() => toggleNormalize('ignoreProtocol')}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 transition-colors"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleNormalize('ignoreProtocol');
+              }
+            }}
+            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
           >
             <div>
               <p className="font-semibold text-slate-200">
@@ -186,7 +284,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors"
+            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors cursor-pointer"
           >
             Apply & Close
           </button>

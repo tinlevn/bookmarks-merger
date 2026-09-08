@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeUrl, pickBestTitle } from './normalizer';
+import { normalizeUrl, pickBestTitle, decodeHtmlEntities } from './normalizer';
 import {
   parseBookmarkFile,
   detectBrowser,
+  parseNetscapeHtml,
 } from './parser';
 import { analyzeBookmarkGaps } from './analyzer';
 import { buildMergedTree } from './merger';
-import { serializeNetscapeHtml, serializeCatchupHtml } from './serializer';
+import {
+  serializeNetscapeHtml,
+  serializeCatchupHtml,
+  serializeMatrixCsv,
+} from './serializer';
 import {
   CHROME_DEMO_HTML,
   EDGE_DEMO_HTML,
@@ -14,6 +19,7 @@ import {
   VIVALDI_DEMO_HTML,
 } from './demo-data';
 import type { MergeOptions } from './types';
+import { isSafeWebUrl, escapeCsvSafe } from '../utils/security';
 
 const defaultOptions: MergeOptions = {
   normalize: {
@@ -46,10 +52,55 @@ describe('URL Normalizer', () => {
     expect(normalizeUrl(url1)).toBe(normalizeUrl(url2));
   });
 
+  it('preserves non-hierarchical protocols without double slash corruption', () => {
+    expect(normalizeUrl('mailto:support@example.com')).toBe('mailto:support@example.com');
+    expect(normalizeUrl('javascript:void(0)')).toBe('javascript:void(0)');
+  });
+
   it('picks best informative title', () => {
     const titles = ['https://github.com', 'GitHub', 'GitHub: Where the world builds software'];
     const best = pickBestTitle(titles, 'https://github.com');
     expect(best).toBe('GitHub: Where the world builds software');
+  });
+
+  it('decodes named, decimal, and hexadecimal HTML entities correctly', () => {
+    expect(decodeHtmlEntities('GitHub &mdash; Where &amp; how')).toBe('GitHub — Where & how');
+    expect(decodeHtmlEntities('Tom &#38; Jerry')).toBe('Tom & Jerry');
+    expect(decodeHtmlEntities('Price: &#x24;100 &#x2014; Special')).toBe('Price: $100 — Special');
+    expect(decodeHtmlEntities('Copyright &copy; 2026')).toBe('Copyright © 2026');
+  });
+});
+
+describe('Security Utilities', () => {
+  it('validates safe web URLs and blocks javascript/data/vbscript', () => {
+    expect(isSafeWebUrl('https://example.com')).toBe(true);
+    expect(isSafeWebUrl('http://insecure.org/path')).toBe(true);
+    expect(isSafeWebUrl('ftp://ftp.is.co.za')).toBe(true);
+    expect(isSafeWebUrl('javascript:alert(1)')).toBe(false);
+    expect(isSafeWebUrl('javascript://%0aalert(1)')).toBe(false);
+    expect(isSafeWebUrl('data:text/html,<script>alert(1)</script>')).toBe(false);
+    expect(isSafeWebUrl('vbscript:msgbox(1)')).toBe(false);
+    expect(isSafeWebUrl('')).toBe(false);
+  });
+
+  it('neutralizes CSV formula injection trigger characters', () => {
+    expect(escapeCsvSafe('=cmd|calc')).toBe(`"'=cmd|calc"`);
+    expect(escapeCsvSafe('+SUM(1,2)')).toBe(`"'+SUM(1,2)"`);
+    expect(escapeCsvSafe('-10+20')).toBe(`"'-10+20"`);
+    expect(escapeCsvSafe('@mention')).toBe(`"'@mention"`);
+    expect(escapeCsvSafe('\tTabbed')).toBe(`"'\tTabbed"`);
+    expect(escapeCsvSafe('Normal Title')).toBe(`"Normal Title"`);
+  });
+
+  it('sanitizes CSV output through serializeMatrixCsv', () => {
+    const mockBm: any = {
+      canonicalUrl: 'https://safe.com',
+      title: '=cmd|\' /C calc\'!A0',
+      unifiedFolderPath: ['Toolbar'],
+      sourceFileIds: ['f1'],
+    };
+    const csv = serializeMatrixCsv([mockBm], [{ id: 'f1', label: 'Chrome' }]);
+    expect(csv).toContain(`"'=cmd|' /C calc'!A0"`);
   });
 });
 
@@ -65,14 +116,51 @@ describe('Bookmark Parser', () => {
     const file = parseBookmarkFile(CHROME_DEMO_HTML, 'chrome.html');
     expect(file.browser).toBe('chrome');
     expect(file.allBookmarks.length).toBe(8);
-    // Dev folder has 2 items
     const devBookmarks = file.allBookmarks.filter((b) =>
       b.folderPath.includes('Development')
     );
     expect(devBookmarks.length).toBe(2);
   });
 
-  it('parses Chromium JSON format', () => {
+  it('does not swallow bookmarks when closing </A> tag is omitted', () => {
+    const unclosedHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<DL><p>
+    <DT><H3>Tools</H3>
+    <DL><p>
+        <DT><A HREF="https://site1.com">Site 1 Without Close
+        <DT><A HREF="https://site2.com">Site 2 With Close</A>
+        <DT><A HREF="https://site3.com">Site 3
+    </DL><p>
+</DL><p>`;
+
+    const parsed = parseNetscapeHtml(unclosedHtml, 'f1', 'chrome');
+    expect(parsed.allBookmarks.length).toBe(3);
+    expect(parsed.allBookmarks[0].url).toBe('https://site1.com');
+    expect(parsed.allBookmarks[0].title).toBe('Site 1 Without Close');
+    expect(parsed.allBookmarks[1].url).toBe('https://site2.com');
+    expect(parsed.allBookmarks[1].title).toBe('Site 2 With Close');
+    expect(parsed.allBookmarks[2].url).toBe('https://site3.com');
+  });
+
+  it('parses unnested sibling root folders without outer DL correctly', () => {
+    const siblingHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<DT><H3>Folder A</H3>
+<DL><p>
+    <DT><A HREF="https://a.com">Item A</A>
+</DL><p>
+<DT><H3>Folder B</H3>
+<DL><p>
+    <DT><A HREF="https://b.com">Item B</A>
+</DL><p>`;
+
+    const parsed = parseNetscapeHtml(siblingHtml, 'f1', 'chrome');
+    expect(parsed.rootFolders.length).toBe(2);
+    expect(parsed.rootFolders[0].title).toBe('Folder A');
+    expect(parsed.rootFolders[1].title).toBe('Folder B');
+    expect(parsed.rootFolders[0].subfolders.length).toBe(0);
+  });
+
+  it('parses Chromium JSON format and handles corrupt JSON gracefully', () => {
     const jsonSample = JSON.stringify({
       roots: {
         bookmark_bar: {
@@ -90,9 +178,13 @@ describe('Bookmark Parser', () => {
       },
     });
 
-    const file = parseBookmarkFile(jsonSample, 'Bookmarks');
+    const file = parseBookmarkFile(jsonSample, 'Bookmarks.json');
     expect(file.allBookmarks.length).toBe(2);
     expect(file.allBookmarks[1].folderPath).toEqual(['Bookmarks bar', 'Sub']);
+
+    // Corrupt JSON should not throw exception
+    const corruptFile = parseBookmarkFile('{ invalid json: roots }', 'Bookmarks.json');
+    expect(corruptFile.allBookmarks.length).toBe(0);
   });
 });
 
@@ -131,12 +223,37 @@ describe('Gap Analyzer', () => {
     }
   });
 
+  it('dynamically recalculates matrix when normalization options change', () => {
+    const file1 = parseBookmarkFile(
+      '<DL><p><DT><A HREF="https://example.com/item?utm_source=fb">Item</A></DL><p>',
+      'f1.html',
+      'Browser1'
+    );
+    const file2 = parseBookmarkFile(
+      '<DL><p><DT><A HREF="https://example.com/item">Item</A></DL><p>',
+      'f2.html',
+      'Browser2'
+    );
+
+    // With stripTrackingParams: true (default) -> identical URL, 1 unique item, 100% overlap
+    const strippedResult = analyzeBookmarkGaps([file1, file2], defaultOptions);
+    expect(strippedResult.totalUniqueUrls).toBe(1);
+    expect(strippedResult.overlapRate).toBe(100);
+
+    // With stripTrackingParams: false -> treated as 2 separate items
+    const strictResult = analyzeBookmarkGaps([file1, file2], {
+      ...defaultOptions,
+      normalize: { ...defaultOptions.normalize, stripTrackingParams: false },
+    });
+    expect(strictResult.totalUniqueUrls).toBe(2);
+    expect(strictResult.overlapRate).toBe(0);
+  });
+
   it('identifies folder location conflicts', () => {
     const chrome = parseBookmarkFile(CHROME_DEMO_HTML, 'chrome.html', 'Chrome');
     const edge = parseBookmarkFile(EDGE_DEMO_HTML, 'edge.html', 'Edge');
     const result = analyzeBookmarkGaps([chrome, edge], defaultOptions);
 
-    // Stack Overflow is in Bookmarks Bar in Chrome, but in Other favorites in Edge
     const conflict = result.conflictingLocations.find((c) =>
       c.canonicalUrl.includes('stackoverflow.com')
     );
@@ -153,16 +270,12 @@ describe('Folder Merger & HTML Serializer', () => {
     const mergedTree = buildMergedTree(result.matrix, defaultOptions);
     expect(mergedTree.length).toBeGreaterThan(0);
 
-    // Root folder should be Bookmarks Bar (toolbar unified)
     const toolbar = mergedTree.find((f) => f.toolbarFolder);
     expect(toolbar).toBeDefined();
     expect(toolbar?.title).toBe('Bookmarks Bar');
 
-    // Inside toolbar, Development folder should have merged items from both Chrome and Edge
     const devFolder = toolbar?.subfolders.find((f) => f.title === 'Development');
     expect(devFolder).toBeDefined();
-    // Chrome has TypeScript and React. Edge has TypeScript and Rust.
-    // Total in merged Development: TypeScript (deduplicated), React, Rust => 3 items!
     expect(devFolder?.bookmarks.length).toBe(3);
   });
 
@@ -176,7 +289,7 @@ describe('Folder Merger & HTML Serializer', () => {
     expect(html).toContain('<!DOCTYPE NETSCAPE-Bookmark-file-1>');
     expect(html).toContain('PERSONAL_TOOLBAR_FOLDER="true"');
 
-    // Roundtrip test: parse the generated HTML back!
+    // Roundtrip test: parse the generated HTML back
     const roundtripFile = parseBookmarkFile(html, 'merged.html');
     expect(roundtripFile.uniqueUrlCount).toBe(result.totalUniqueUrls);
   });

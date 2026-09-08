@@ -9,12 +9,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { GapAnalysisResult, MergedFolderNode } from '../core/types';
-import {
-  serializeNetscapeHtml,
-  serializeCatchupHtml,
-  serializeMatrixCsv,
-} from '../core/serializer';
+import { serializeNetscapeHtml } from '../core/serializer';
 import { BrowserBadge } from './BrowserBadge';
+import {
+  triggerBlobDownload,
+  exportCatchupBlob,
+  exportCsvBlob,
+} from '../utils/download';
 
 interface ExportPanelProps {
   analysis: GapAnalysisResult;
@@ -32,12 +33,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
 
   const downloadUnifiedHtml = () => {
     const blob = new Blob([mergedHtml], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bookmarks_unified.html';
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerBlobDownload(blob, 'bookmarks_unified.html');
   };
 
   const copyHtmlToClipboard = () => {
@@ -47,31 +43,11 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
   };
 
   const downloadCatchupFile = (fileId: string) => {
-    const targetFile = files.find((f) => f.id === fileId);
-    if (!targetFile) return;
-
-    const missingBms = matrix.filter((b) => b.missingFileIds.includes(fileId));
-    const html = serializeCatchupHtml(missingBms, targetFile.label);
-
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `catchup-for-${targetFile.filename.replace(/\.[^/.]+$/, '')}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
+    exportCatchupBlob(fileId, files, matrix);
   };
 
   const downloadCsv = () => {
-    const headers = files.map((f) => ({ id: f.id, label: f.label }));
-    const csv = serializeMatrixCsv(matrix, headers);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bookmark-gap-matrix.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    exportCsvBlob(matrix, files);
   };
 
   const downloadJson = () => {
@@ -101,12 +77,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bookmark-analysis-report.json';
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerBlobDownload(blob, 'bookmark-analysis-report.json');
   };
 
   return (
@@ -141,7 +112,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={copyHtmlToClipboard}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700/60 transition-colors"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700/60 transition-colors cursor-pointer"
           >
             {copiedHtml ? (
               <>
@@ -191,7 +162,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
                   type="button"
                   onClick={() => downloadCatchupFile(file.id)}
                   disabled={missingCount === 0}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5 text-indigo-400" />
                   Catch-up for {file.label}
@@ -217,7 +188,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={downloadCsv}
-            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
           >
             Download CSV
           </button>
@@ -236,7 +207,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={downloadJson}
-            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
           >
             Download JSON
           </button>
@@ -256,7 +227,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="text-xs text-indigo-400 hover:underline"
+            className="text-xs text-indigo-400 hover:underline cursor-pointer"
           >
             {showPreview ? 'Hide Raw Code' : 'View Raw Code'}
           </button>

@@ -5,78 +5,58 @@ import type {
   NormalizeOptions,
   ParsedBookmarkFile,
 } from './types';
-import { normalizeUrl } from './normalizer';
-
-const BROWSER_COLORS: Record<
-  BrowserType,
-  { bg: string; text: string; border: string; accent: string }
-> = {
-  chrome: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
-    border: 'border-amber-500/30',
-    accent: '#f59e0b',
-  },
-  edge: {
-    bg: 'bg-cyan-500/10',
-    text: 'text-cyan-400',
-    border: 'border-cyan-500/30',
-    accent: '#06b6d4',
-  },
-  firefox: {
-    bg: 'bg-orange-500/10',
-    text: 'text-orange-400',
-    border: 'border-orange-500/30',
-    accent: '#f97316',
-  },
-  vivaldi: {
-    bg: 'bg-rose-500/10',
-    text: 'text-rose-400',
-    border: 'border-rose-500/30',
-    accent: '#f43f5e',
-  },
-  opera: {
-    bg: 'bg-red-500/10',
-    text: 'text-red-400',
-    border: 'border-red-500/30',
-    accent: '#ef4444',
-  },
-  safari: {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-    border: 'border-blue-500/30',
-    accent: '#3b82f6',
-  },
-  other: {
-    bg: 'bg-indigo-500/10',
-    text: 'text-indigo-400',
-    border: 'border-indigo-500/30',
-    accent: '#6366f1',
-  },
-};
+import { normalizeUrl, decodeHtmlEntities } from './normalizer';
+import { BROWSER_THEMES } from './constants';
+import { generateSafeId } from '../utils/security';
 
 /**
  * Detect browser from file content and filename.
  */
 export function detectBrowser(content: string, filename: string): BrowserType {
   const lowerName = filename.toLowerCase();
-  const lowerContent = content.slice(0, 3000).toLowerCase();
+  const lowerContent = content.slice(0, 4000).toLowerCase();
 
-  if (lowerName.includes('firefox') || lowerContent.includes('unfiled_bookmarks_folder') || (lowerContent.includes('toolbar="true"') && lowerContent.includes('bookmarks toolbar'))) {
+  // 1. Firefox
+  if (
+    lowerName.includes('firefox') ||
+    lowerContent.includes('unfiled_bookmarks_folder') ||
+    (lowerContent.includes('toolbar="true"') && lowerContent.includes('bookmarks toolbar'))
+  ) {
     return 'firefox';
   }
-  if (lowerName.includes('vivaldi') || lowerContent.includes('speeddial="true"') || lowerContent.includes('vivaldi')) {
+
+  // 2. Vivaldi
+  if (
+    lowerName.includes('vivaldi') ||
+    lowerContent.includes('speeddial="true"') ||
+    lowerContent.includes('vivaldi')
+  ) {
     return 'vivaldi';
   }
+
+  // 3. Opera
   if (lowerName.includes('opera') || lowerContent.includes('opera')) {
     return 'opera';
   }
-  if (lowerName.includes('edge') || lowerName.includes('favorites') || lowerContent.includes('favorites bar')) {
+
+  // 4. Microsoft Edge
+  if (
+    lowerName.includes('edge') ||
+    lowerName.includes('favorites') ||
+    lowerContent.includes('favorites bar')
+  ) {
     return 'edge';
   }
-  if (lowerName.includes('chrome') || lowerContent.includes('personal_toolbar_folder="true"')) {
+
+  // 5. Google Chrome
+  if (
+    lowerName.includes('chrome') ||
+    lowerContent.includes('personal_toolbar_folder="true"')
+  ) {
     return 'chrome';
   }
+
+  // 6. Safari
   if (lowerName.includes('safari') || lowerContent.includes('safari')) {
     return 'safari';
   }
@@ -85,25 +65,10 @@ export function detectBrowser(content: string, filename: string): BrowserType {
 }
 
 /**
- * Clean decoded HTML entities from titles and attributes.
- */
-function decodeHtmlEntities(str: string): string {
-  return str
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#(\d+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)));
-}
-
-/**
  * Parse attributes from HTML tag string like: <A HREF="..." ADD_DATE="...">
  */
 function parseAttributes(tagStr: string): Record<string, string> {
   const attrs: Record<string, string> = {};
-  // Match key="value", key='value', or key=value
   const regex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(tagStr)) !== null) {
@@ -117,6 +82,7 @@ function parseAttributes(tagStr: string): Record<string, string> {
 /**
  * Fast, streaming stack-based Netscape Bookmark HTML parser.
  * Handles irregular/unclosed HTML tags across Chrome, Edge, Firefox, Vivaldi, Opera.
+ * Protects against bookmark loss when </A> tags are omitted.
  */
 export function parseNetscapeHtml(
   content: string,
@@ -127,24 +93,21 @@ export function parseNetscapeHtml(
   const rootFolders: FolderNode[] = [];
   const allBookmarks: BookmarkItem[] = [];
 
-  interface ActiveFolder {
-    node: FolderNode;
+  interface StackEntry {
+    node: FolderNode | null; // null represents the document root container (<DL><p>)
     path: string[];
   }
 
-  const stack: ActiveFolder[] = [];
+  const stack: StackEntry[] = [];
   let pendingFolder: {
     title: string;
     attrs: Record<string, string>;
   } | null = null;
 
-  // Regex tokenizer to walk through bookmark HTML tags
-  // Matches:
-  // 1. <H3 ...>...</H3> or <H3 ...>
-  // 2. <DL ...>
-  // 3. </DL>
-  // 4. <A ...>...</A>
-  const tokenRegex = /<(H3)([^>]*)>(.*?)(?:<\/H3>|$)|<(A)([^>]*)>(.*?)(?:<\/A>|$)|<(\/DL)>|<(DL)[^>]*>/gis;
+  // Regex token matching with lookahead:
+  // Extracts H3 titles or A titles stopping at closing tags OR upcoming bookmark tags
+  const tokenRegex =
+    /<(H3)([^>]*)>([\s\S]*?)(?:<\/H3>|(?=<(?:H3|A|\/DL|DL|DT)\b|$))|<(A)([^>]*)>([\s\S]*?)(?:<\/A>|(?=<(?:H3|A|\/DL|DL|DT)\b|$))|<(\/DL)>|<(DL)[^>]*>/gi;
 
   let match: RegExpExecArray | null;
 
@@ -155,21 +118,22 @@ export function parseNetscapeHtml(
     const isOpenDL = Boolean(match[8]);
 
     if (isH3) {
-      // If there was a pending folder that didn't have a DL, treat it as an empty folder
       if (pendingFolder) {
         commitPendingFolder();
       }
 
       const attrs = parseAttributes(match[2] || '');
       const rawTitle = match[3] || 'New Folder';
-      const title = decodeHtmlEntities(rawTitle.replace(/<[^>]+>/g, '').trim());
+      const title = decodeHtmlEntities(rawTitle.replace(/<[^>]+>/g, '').trim()) || 'New Folder';
 
       pendingFolder = { title, attrs };
     } else if (isOpenDL) {
       if (pendingFolder) {
-        const currentPath = stack.length > 0 ? [...stack[stack.length - 1].path] : [];
+        const parentEntry = stack.length > 0 ? stack[stack.length - 1] : null;
+        const currentPath = parentEntry ? parentEntry.path : [];
+
         const folderNode: FolderNode = {
-          id: `folder_${fileId}_${stack.length}_${Math.random().toString(36).substring(2, 9)}`,
+          id: generateSafeId(`folder_${fileId}`),
           title: pendingFolder.title,
           addDate: pendingFolder.attrs['ADD_DATE'],
           lastModified: pendingFolder.attrs['LAST_MODIFIED'],
@@ -181,10 +145,10 @@ export function parseNetscapeHtml(
           subfolders: [],
         };
 
-        if (stack.length === 0) {
+        if (!parentEntry || parentEntry.node === null) {
           rootFolders.push(folderNode);
         } else {
-          stack[stack.length - 1].node.subfolders.push(folderNode);
+          parentEntry.node.subfolders.push(folderNode);
         }
 
         stack.push({
@@ -193,22 +157,15 @@ export function parseNetscapeHtml(
         });
 
         pendingFolder = null;
-      } else if (stack.length === 0) {
-        // Initial root DL without preceding H3
-        const rootNode: FolderNode = {
-          id: `folder_root_${fileId}`,
-          title: 'Root',
-          bookmarks: [],
-          subfolders: [],
-        };
-        rootFolders.push(rootNode);
-        stack.push({ node: rootNode, path: [] });
+      } else {
+        // Enclosing document-level <DL> container
+        stack.push({ node: null, path: [] });
       }
     } else if (isCloseDL) {
       if (pendingFolder) {
         commitPendingFolder();
       }
-      if (stack.length > 1) {
+      if (stack.length > 0) {
         stack.pop();
       }
     } else if (isA) {
@@ -223,11 +180,22 @@ export function parseNetscapeHtml(
       const rawTitle = match[6] || '';
       const title = decodeHtmlEntities(rawTitle.replace(/<[^>]+>/g, '').trim()) || url;
 
-      const currentPath = stack.length > 0 ? [...stack[stack.length - 1].path] : [];
+      // Find active enclosing folder
+      let activeFolder: FolderNode | null = null;
+      let currentPath: string[] = [];
+
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i].node !== null) {
+          activeFolder = stack[i].node;
+          currentPath = stack[i].path;
+          break;
+        }
+      }
+
       const normalized = normalizeUrl(url, normOpts);
 
       const bookmark: BookmarkItem = {
-        id: `bm_${fileId}_${allBookmarks.length}_${Math.random().toString(36).substring(2, 9)}`,
+        id: generateSafeId(`bm_${fileId}`),
         url,
         normalizedUrl: normalized,
         title,
@@ -239,21 +207,21 @@ export function parseNetscapeHtml(
         sourceBrowser: browser,
       };
 
-      if (stack.length > 0) {
-        stack[stack.length - 1].node.bookmarks.push(bookmark);
+      if (activeFolder) {
+        activeFolder.bookmarks.push(bookmark);
       } else {
-        // Root bookmark without folder
-        if (rootFolders.length === 0) {
-          const rootNode: FolderNode = {
-            id: `folder_root_${fileId}`,
+        // Root unfiled bookmark without explicit folder
+        let defaultRoot = rootFolders.find((f) => f.title === 'Bookmarks' || f.title === 'Other Bookmarks');
+        if (!defaultRoot) {
+          defaultRoot = {
+            id: generateSafeId(`folder_root_${fileId}`),
             title: 'Bookmarks',
             bookmarks: [],
             subfolders: [],
           };
-          rootFolders.push(rootNode);
-          stack.push({ node: rootNode, path: [] });
+          rootFolders.push(defaultRoot);
         }
-        rootFolders[0].bookmarks.push(bookmark);
+        defaultRoot.bookmarks.push(bookmark);
       }
 
       allBookmarks.push(bookmark);
@@ -262,8 +230,10 @@ export function parseNetscapeHtml(
 
   function commitPendingFolder() {
     if (!pendingFolder) return;
+    const parentEntry = stack.length > 0 ? stack[stack.length - 1] : null;
+
     const folderNode: FolderNode = {
-      id: `folder_${fileId}_${Math.random().toString(36).substring(2, 9)}`,
+      id: generateSafeId(`folder_${fileId}`),
       title: pendingFolder.title,
       addDate: pendingFolder.attrs['ADD_DATE'],
       lastModified: pendingFolder.attrs['LAST_MODIFIED'],
@@ -274,10 +244,11 @@ export function parseNetscapeHtml(
       bookmarks: [],
       subfolders: [],
     };
-    if (stack.length === 0) {
+
+    if (!parentEntry || parentEntry.node === null) {
       rootFolders.push(folderNode);
     } else {
-      stack[stack.length - 1].node.subfolders.push(folderNode);
+      parentEntry.node.subfolders.push(folderNode);
     }
     pendingFolder = null;
   }
@@ -297,18 +268,25 @@ export function parseChromiumJson(
   const rootFolders: FolderNode[] = [];
   const allBookmarks: BookmarkItem[] = [];
 
-  const json = JSON.parse(content);
-  const roots = json.roots || {};
+  let json: any;
+  try {
+    json = JSON.parse(content);
+  } catch (err) {
+    console.error('Failed to parse Chromium JSON bookmarks file:', err);
+    return { rootFolders, allBookmarks };
+  }
+
+  const roots = json && typeof json === 'object' ? json.roots || {} : {};
 
   function traverseJsonNode(node: any, currentPath: string[]): FolderNode | null {
-    if (!node) return null;
+    if (!node || typeof node !== 'object') return null;
 
     if (node.type === 'folder') {
-      const folderTitle = node.name || 'Folder';
+      const folderTitle = decodeHtmlEntities(node.name || 'Folder');
       const path = currentPath.length === 0 && folderTitle === 'Root' ? [] : [...currentPath, folderTitle];
 
       const folderNode: FolderNode = {
-        id: `folder_${fileId}_${Math.random().toString(36).substring(2, 9)}`,
+        id: generateSafeId(`folder_${fileId}`),
         title: folderTitle,
         addDate: node.date_added,
         lastModified: node.date_modified,
@@ -318,14 +296,15 @@ export function parseChromiumJson(
 
       if (Array.isArray(node.children)) {
         for (const child of node.children) {
-          if (child.type === 'url' && child.url) {
-            const url = child.url.trim();
+          if (child && child.type === 'url' && child.url) {
+            const url = (child.url as string).trim();
             const normalized = normalizeUrl(url, normOpts);
+            const title = decodeHtmlEntities(child.name || url);
             const bm: BookmarkItem = {
-              id: `bm_${fileId}_${allBookmarks.length}_${Math.random().toString(36).substring(2, 9)}`,
+              id: generateSafeId(`bm_${fileId}`),
               url,
               normalizedUrl: normalized,
-              title: child.name || url,
+              title,
               addDate: child.date_added,
               folderPath: path,
               sourceFileId: fileId,
@@ -333,7 +312,7 @@ export function parseChromiumJson(
             };
             folderNode.bookmarks.push(bm);
             allBookmarks.push(bm);
-          } else if (child.type === 'folder') {
+          } else if (child && child.type === 'folder') {
             const sub = traverseJsonNode(child, path);
             if (sub) folderNode.subfolders.push(sub);
           }
@@ -361,11 +340,11 @@ export function parseBookmarkFile(
   customLabel?: string,
   normOpts?: Partial<NormalizeOptions>
 ): ParsedBookmarkFile {
-  const fileId = `file_${Math.random().toString(36).substring(2, 9)}`;
+  const fileId = generateSafeId('file');
   const browser = detectBrowser(content, filename);
   const label = customLabel || defaultBrowserLabel(browser, filename);
 
-  const trimmed = content.trim();
+  const trimmed = (content || '').trim();
   let rootFolders: FolderNode[] = [];
   let allBookmarks: BookmarkItem[] = [];
 
@@ -386,7 +365,7 @@ export function parseBookmarkFile(
     filename,
     browser,
     label,
-    color: BROWSER_COLORS[browser],
+    color: BROWSER_THEMES[browser],
     rawText: content,
     rootFolders,
     allBookmarks,

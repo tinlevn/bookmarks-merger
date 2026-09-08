@@ -12,7 +12,8 @@ import {
   Folder,
 } from 'lucide-react';
 import type { GapAnalysisResult } from '../core/types';
-import { serializeCatchupHtml, serializeMatrixCsv } from '../core/serializer';
+import { exportCatchupBlob, exportCsvBlob } from '../utils/download';
+import { isSafeWebUrl } from '../utils/security';
 
 interface GapMatrixViewProps {
   analysis: GapAnalysisResult;
@@ -82,34 +83,6 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
     setTimeout(() => setBatchCopied(false), 2000);
   };
 
-  const downloadCatchupFile = (fileId: string) => {
-    const targetFile = files.find((f) => f.id === fileId);
-    if (!targetFile) return;
-
-    const missingBms = matrix.filter((b) => b.missingFileIds.includes(fileId));
-    const html = serializeCatchupHtml(missingBms, targetFile.label);
-
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `catchup-for-${targetFile.filename.replace(/\.[^/.]+$/, '')}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const downloadCsv = () => {
-    const headers = files.map((f) => ({ id: f.id, label: f.label }));
-    const csv = serializeMatrixCsv(matrix, headers);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bookmark-gap-matrix.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const selectedFile = files.find((f) => f.id === selectedFilter);
 
   return (
@@ -156,7 +129,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
                 <button
                   type="button"
-                  onClick={() => downloadCatchupFile(selectedFile.id)}
+                  onClick={() => exportCatchupBlob(selectedFile.id, files, matrix)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -167,7 +140,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
             <button
               type="button"
-              onClick={downloadCsv}
+              onClick={() => exportCsvBlob(matrix, files)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors ml-auto md:ml-0"
               title="Download comparison matrix as CSV"
             >
@@ -178,7 +151,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" role="toolbar" aria-label="Filter Bookmarks">
           <span className="text-slate-500 font-medium mr-1 flex items-center gap-1 flex-shrink-0">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
@@ -296,6 +269,10 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
               {paginatedBookmarks.map((bm) => {
                 const isCopied = copiedId === bm.canonicalUrl;
                 const presentSet = new Set(bm.sourceFileIds);
+                const safeWeb = isSafeWebUrl(bm.canonicalUrl);
+                const safeIcon =
+                  bm.icon &&
+                  (bm.icon.startsWith('data:image/') || isSafeWebUrl(bm.icon));
 
                 return (
                   <tr
@@ -306,7 +283,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                     <td className="py-3 px-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          {bm.icon ? (
+                          {safeIcon ? (
                             <img
                               src={bm.icon}
                               alt=""
@@ -330,15 +307,17 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                           <span className="truncate max-w-[340px]" title={bm.canonicalUrl}>
                             {bm.canonicalUrl}
                           </span>
-                          <a
-                            href={bm.canonicalUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Open link in new tab"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                          {safeWeb && (
+                            <a
+                              href={bm.canonicalUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Open link in new tab"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
                         </div>
                       </div>
                     </td>

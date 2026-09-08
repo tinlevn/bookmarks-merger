@@ -1,12 +1,15 @@
 import type { MergedFolderNode, MergeOptions, UnifiedBookmark } from './types';
+import { TOOLBAR_ROOT_NAMES, UNFILED_ROOT_NAMES } from './constants';
 
 /**
  * Builds a unified, deduplicated folder hierarchy from the unified bookmarks matrix.
  */
 export function buildMergedTree(
   unifiedBookmarks: UnifiedBookmark[],
-  _options?: MergeOptions
+  options?: MergeOptions
 ): MergedFolderNode[] {
+  const unifyToolbars = options ? options.unifyToolbars : true;
+
   // Intermediate tree structure for fast lookup
   interface TempNode {
     title: string;
@@ -24,17 +27,13 @@ export function buildMergedTree(
     isRoot: boolean
   ): TempNode {
     if (!parentMap.has(folderName)) {
-      const lower = folderName.toLowerCase();
+      const lower = folderName.toLowerCase().trim();
       const isToolbar =
         isRoot &&
-        (lower === 'bookmarks bar' ||
-          lower === 'favorites bar' ||
-          lower === 'bookmarks toolbar');
+        (unifyToolbars ? TOOLBAR_ROOT_NAMES.has(lower) : lower === 'bookmarks bar' || lower === 'toolbar');
       const isUnfiled =
         isRoot &&
-        (lower === 'other bookmarks' ||
-          lower === 'other favorites' ||
-          lower === 'unfiled bookmarks');
+        (unifyToolbars ? UNFILED_ROOT_NAMES.has(lower) : lower === 'other bookmarks');
 
       parentMap.set(folderName, {
         title: folderName,
