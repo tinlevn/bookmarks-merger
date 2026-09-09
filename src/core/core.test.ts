@@ -110,6 +110,40 @@ describe('Bookmark Parser', () => {
     expect(detectBrowser(EDGE_DEMO_HTML, 'favorites_2026_09_08.html')).toBe('edge');
     expect(detectBrowser(FIREFOX_DEMO_HTML, 'bookmarks.html')).toBe('firefox');
     expect(detectBrowser(VIVALDI_DEMO_HTML, 'vivaldi_bookmarks.html')).toBe('vivaldi');
+    expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'brave_bookmarks.html')).toBe('brave');
+    expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'safari_bookmarks.html')).toBe('safari');
+  });
+
+  it('parses Safari and Brave Netscape HTML exports properly', () => {
+    const safariHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3>Favorites</H3>
+    <DL><p>
+        <DT><A HREF="https://apple.com">Apple</A>
+    </DL><p>
+</DL><p>`;
+
+    const braveHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3 PERSONAL_TOOLBAR_FOLDER="true">Bookmarks bar</H3>
+    <DL><p>
+        <DT><A HREF="https://brave.com">Brave Browser</A>
+    </DL><p>
+</DL><p>`;
+
+    const safariFile = parseBookmarkFile(safariHtml, 'safari_bookmarks.html');
+    expect(safariFile.browser).toBe('safari');
+    expect(safariFile.allBookmarks.length).toBe(1);
+    expect(safariFile.allBookmarks[0].url).toBe('https://apple.com');
+
+    const braveFile = parseBookmarkFile(braveHtml, 'brave_bookmarks.html');
+    expect(braveFile.browser).toBe('brave');
+    expect(braveFile.allBookmarks.length).toBe(1);
+    expect(braveFile.allBookmarks[0].url).toBe('https://brave.com');
   });
 
   it('parses Chrome HTML export with folders and items', () => {

@@ -58,6 +58,14 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     accent: '#3b82f6',
     dot: 'bg-blue-400',
   },
+  brave: {
+    name: 'Brave',
+    bg: 'bg-orange-600/10',
+    text: 'text-orange-500',
+    border: 'border-orange-600/30',
+    accent: '#ea580c',
+    dot: 'bg-orange-500',
+  },
   other: {
     name: 'Other',
     bg: 'bg-indigo-500/10',
