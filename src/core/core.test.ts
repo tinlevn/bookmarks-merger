@@ -110,6 +110,40 @@ describe('Bookmark Parser', () => {
     expect(detectBrowser(EDGE_DEMO_HTML, 'favorites_2026_09_08.html')).toBe('edge');
     expect(detectBrowser(FIREFOX_DEMO_HTML, 'bookmarks.html')).toBe('firefox');
     expect(detectBrowser(VIVALDI_DEMO_HTML, 'vivaldi_bookmarks.html')).toBe('vivaldi');
+    expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'brave_bookmarks.html')).toBe('brave');
+    expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'safari_bookmarks.html')).toBe('safari');
+  });
+
+  it('parses Safari and Brave Netscape HTML exports properly', () => {
+    const safariHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3>Favorites</H3>
+    <DL><p>
+        <DT><A HREF="https://apple.com">Apple</A>
+    </DL><p>
+</DL><p>`;
+
+    const braveHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+    <DT><H3 PERSONAL_TOOLBAR_FOLDER="true">Bookmarks bar</H3>
+    <DL><p>
+        <DT><A HREF="https://brave.com">Brave Browser</A>
+    </DL><p>
+</DL><p>`;
+
+    const safariFile = parseBookmarkFile(safariHtml, 'safari_bookmarks.html');
+    expect(safariFile.browser).toBe('safari');
+    expect(safariFile.allBookmarks.length).toBe(1);
+    expect(safariFile.allBookmarks[0].url).toBe('https://apple.com');
+
+    const braveFile = parseBookmarkFile(braveHtml, 'brave_bookmarks.html');
+    expect(braveFile.browser).toBe('brave');
+    expect(braveFile.allBookmarks.length).toBe(1);
+    expect(braveFile.allBookmarks[0].url).toBe('https://brave.com');
   });
 
   it('parses Chrome HTML export with folders and items', () => {
@@ -158,6 +192,23 @@ describe('Bookmark Parser', () => {
     expect(parsed.rootFolders[0].title).toBe('Folder A');
     expect(parsed.rootFolders[1].title).toBe('Folder B');
     expect(parsed.rootFolders[0].subfolders.length).toBe(0);
+  });
+
+  it('handles top-level root bookmarks outside explicit folder headers', () => {
+    const rootBmHtml = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<DL><p>
+    <DT><A HREF="https://toplevel.com">Top Level Bookmark</A>
+    <DT><H3>Folder A</H3>
+    <DL><p>
+        <DT><A HREF="https://a.com">Item A</A>
+    </DL><p>
+</DL><p>`;
+
+    const parsed = parseNetscapeHtml(rootBmHtml, 'f1', 'chrome');
+    expect(parsed.allBookmarks.length).toBe(2);
+    expect(parsed.allBookmarks.some((b) => b.url === 'https://toplevel.com')).toBe(true);
+    const topBm = parsed.allBookmarks.find((b) => b.url === 'https://toplevel.com');
+    expect(topBm?.folderPath).toEqual(['Bookmarks']);
   });
 
   it('parses Chromium JSON format and handles corrupt JSON gracefully', () => {

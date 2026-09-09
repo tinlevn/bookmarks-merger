@@ -16,7 +16,12 @@ export function detectBrowser(content: string, filename: string): BrowserType {
   const lowerName = filename.toLowerCase();
   const lowerContent = content.slice(0, 4000).toLowerCase();
 
-  // 1. Firefox
+  // 1. Brave
+  if (lowerName.includes('brave') || lowerContent.includes('brave')) {
+    return 'brave';
+  }
+
+  // 2. Firefox
   if (
     lowerName.includes('firefox') ||
     lowerContent.includes('unfiled_bookmarks_folder') ||
@@ -25,7 +30,7 @@ export function detectBrowser(content: string, filename: string): BrowserType {
     return 'firefox';
   }
 
-  // 2. Vivaldi
+  // 3. Vivaldi
   if (
     lowerName.includes('vivaldi') ||
     lowerContent.includes('speeddial="true"') ||
@@ -34,12 +39,12 @@ export function detectBrowser(content: string, filename: string): BrowserType {
     return 'vivaldi';
   }
 
-  // 3. Opera
+  // 4. Opera
   if (lowerName.includes('opera') || lowerContent.includes('opera')) {
     return 'opera';
   }
 
-  // 4. Microsoft Edge
+  // 5. Microsoft Edge
   if (
     lowerName.includes('edge') ||
     lowerName.includes('favorites') ||
@@ -48,7 +53,7 @@ export function detectBrowser(content: string, filename: string): BrowserType {
     return 'edge';
   }
 
-  // 5. Google Chrome
+  // 6. Google Chrome
   if (
     lowerName.includes('chrome') ||
     lowerContent.includes('personal_toolbar_folder="true"')
@@ -56,7 +61,7 @@ export function detectBrowser(content: string, filename: string): BrowserType {
     return 'chrome';
   }
 
-  // 6. Safari
+  // 7. Safari
   if (lowerName.includes('safari') || lowerContent.includes('safari')) {
     return 'safari';
   }
@@ -221,6 +226,7 @@ export function parseNetscapeHtml(
           };
           rootFolders.push(defaultRoot);
         }
+        bookmark.folderPath = [defaultRoot.title];
         defaultRoot.bookmarks.push(bookmark);
       }
 
@@ -388,6 +394,8 @@ export function defaultBrowserLabel(browser: BrowserType, filename: string): str
       return `Opera (${baseName})`;
     case 'safari':
       return `Safari (${baseName})`;
+    case 'brave':
+      return `Brave (${baseName})`;
     default:
       return baseName;
   }

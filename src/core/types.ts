@@ -5,6 +5,7 @@ export type BrowserType =
   | 'vivaldi'
   | 'opera'
   | 'safari'
+  | 'brave'
   | 'other';
 
 export interface BookmarkItem {
