@@ -112,6 +112,7 @@ describe('Bookmark Parser', () => {
     expect(detectBrowser(VIVALDI_DEMO_HTML, 'vivaldi_bookmarks.html')).toBe('vivaldi');
     expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'brave_bookmarks.html')).toBe('brave');
     expect(detectBrowser('<!DOCTYPE NETSCAPE-Bookmark-file-1>', 'safari_bookmarks.html')).toBe('safari');
+    expect(detectBrowser('', '')).toBe('other');
   });
 
   it('parses Safari and Brave Netscape HTML exports properly', () => {

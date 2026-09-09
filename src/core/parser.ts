@@ -13,8 +13,10 @@ import { generateSafeId } from '../utils/security';
  * Detect browser from file content and filename.
  */
 export function detectBrowser(content: string, filename: string): BrowserType {
-  const lowerName = filename.toLowerCase();
-  const lowerContent = content.slice(0, 4000).toLowerCase();
+  if (!content && !filename) return 'other';
+
+  const lowerName = (filename || '').toLowerCase();
+  const lowerContent = (content || '').slice(0, 4000).toLowerCase();
 
   // 1. Brave
   if (lowerName.includes('brave') || lowerContent.includes('brave')) {
