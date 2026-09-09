@@ -88,11 +88,11 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
   return (
     <div className="space-y-4">
       {/* Controls Header: Search & Filter Pills */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-4">
+      <div className="bg-surface border border-ink/20 rounded-lg p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md lg:max-w-xl">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
             <input
               type="text"
               placeholder="Search title, URL, or folder..."
@@ -101,7 +101,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-10 pr-4 py-2 bg-surface-muted border border-ink/20 rounded text-xs text-ink placeholder-ink-faint focus:outline-none focus:border-cyan transition-colors"
             />
           </div>
 
@@ -112,16 +112,16 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 <button
                   type="button"
                   onClick={copyBatchUrls}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-strong text-ink transition-colors"
                 >
                   {batchCopied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-acid-strong" />
                       Copied {filteredBookmarks.length} URLs!
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <Copy className="w-3.5 h-3.5 text-ink-soft" />
                       Copy {filteredBookmarks.length} Missing URLs
                     </>
                   )}
@@ -130,7 +130,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 <button
                   type="button"
                   onClick={() => exportCatchupBlob(selectedFile.id, files, matrix)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-signal/15 text-signal border border-signal/30 hover:bg-signal/25 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Download Catch-up HTML for {selectedFile.label}
@@ -141,10 +141,10 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
             <button
               type="button"
               onClick={() => exportCsvBlob(matrix, files)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors ml-auto md:ml-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-strong text-ink border border-ink/20 transition-colors ml-auto md:ml-0"
               title="Download comparison matrix as CSV"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-acid-strong" />
               Export CSV
             </button>
           </div>
@@ -152,7 +152,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
         {/* Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" role="toolbar" aria-label="Filter Bookmarks">
-          <span className="text-slate-500 font-medium mr-1 flex items-center gap-1 flex-shrink-0">
+          <span className="text-ink-faint font-medium mr-1 flex items-center gap-1 flex-shrink-0">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
 
@@ -164,8 +164,8 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
             }}
             className={`px-3 py-1 rounded-lg font-medium transition-colors flex-shrink-0 ${
               selectedFilter === 'all'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                ? 'bg-ink text-surface shadow-sm'
+                : 'bg-surface-muted text-ink-soft hover:text-ink hover:bg-surface-strong'
             }`}
           >
             All Unique ({matrix.length})
@@ -186,12 +186,12 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 }}
                 className={`px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1.5 flex-shrink-0 ${
                   isSelected
-                    ? 'bg-amber-500 text-slate-950 font-semibold shadow-sm'
-                    : 'bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/20'
+                    ? 'bg-amber text-ink font-semibold shadow-sm'
+                    : 'bg-amber/10 text-amber hover:bg-amber/20 border border-amber/20'
                 }`}
               >
                 <span>Missing in {file.label}</span>
-                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-amber-950/40 text-amber-200">
+                <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-amber/20 text-amber">
                   {stats ? stats.missingCount : 0}
                 </span>
               </button>
@@ -206,8 +206,8 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
             }}
             className={`px-3 py-1 rounded-lg font-medium transition-colors flex-shrink-0 ${
               selectedFilter === 'exclusive'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                ? 'bg-ink text-surface'
+                : 'bg-surface-muted text-ink-soft hover:text-ink hover:bg-surface-strong'
             }`}
           >
             Single Browser Only ({matrix.filter((b) => b.isExclusive).length})
@@ -221,8 +221,8 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
             }}
             className={`px-3 py-1 rounded-lg font-medium transition-colors flex-shrink-0 ${
               selectedFilter === 'shared'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                ? 'bg-ink text-surface'
+                : 'bg-surface-muted text-ink-soft hover:text-ink hover:bg-surface-strong'
             }`}
           >
             Shared in All ({matrix.filter((b) => b.isSharedAll).length})
@@ -237,8 +237,8 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
               }}
               className={`px-3 py-1 rounded-lg font-medium transition-colors flex-shrink-0 ${
                 selectedFilter === 'conflicts'
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 border border-rose-500/20'
+                  ? 'bg-amber text-ink'
+                  : 'bg-amber/10 text-amber hover:bg-amber/20 border border-amber/20'
               }`}
             >
               Path Conflicts ({conflictingLocations.length})
@@ -248,11 +248,11 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-surface border border-ink/20 rounded-lg overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 font-semibold uppercase tracking-wider">
+              <tr className="border-b border-ink/20 bg-surface-muted text-ink-soft font-semibold uppercase tracking-wider">
                 <th className="py-3.5 px-4 min-w-[300px] w-2/5">Bookmark & URL</th>
                 <th className="py-3.5 px-4 min-w-[200px] w-1/4">Target Folder</th>
                 {files.map((file) => (
@@ -265,7 +265,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 <th className="py-3.5 px-4 text-right min-w-[70px] w-16">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-ink/10">
               {paginatedBookmarks.map((bm) => {
                 const isCopied = copiedId === bm.canonicalUrl;
                 const presentSet = new Set(bm.sourceFileIds);
@@ -277,7 +277,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 return (
                   <tr
                     key={bm.canonicalUrl}
-                    className="hover:bg-slate-800/30 transition-colors group"
+                    className="hover:bg-cyan-soft/20 transition-colors group"
                   >
                     {/* Bookmark Title & Canonical URL */}
                     <td className="py-3 px-4">
@@ -291,19 +291,19 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                               onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
                             />
                           ) : (
-                            <div className="w-4 h-4 rounded bg-slate-800 flex items-center justify-center text-[9px] font-mono text-slate-400 flex-shrink-0">
+                            <div className="w-4 h-4 rounded bg-surface-muted flex items-center justify-center text-[9px] font-mono text-ink-faint flex-shrink-0">
                               🔗
                             </div>
                           )}
                           <span
-                            className="font-medium text-slate-200 line-clamp-1 group-hover:text-indigo-300 transition-colors"
+                            className="font-medium text-ink line-clamp-1 group-hover:text-signal transition-colors"
                             title={bm.title}
                           >
                             {bm.title}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500">
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-ink-faint">
                           <span className="truncate max-w-sm md:max-w-md lg:max-w-xl xl:max-w-3xl" title={bm.canonicalUrl}>
                             {bm.canonicalUrl}
                           </span>
@@ -312,7 +312,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                               href={bm.canonicalUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-slate-600 hover:text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="text-ink-faint hover:text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity"
                               title="Open link in new tab"
                             >
                               <ExternalLink className="w-3 h-3" />
@@ -324,8 +324,8 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
                     {/* Unified Folder Path */}
                     <td className="py-3 px-4 min-w-[200px]">
-                      <div className="flex items-center gap-1.5 text-slate-400">
-                        <Folder className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                      <div className="flex items-center gap-1.5 text-ink-soft">
+                        <Folder className="w-3.5 h-3.5 text-signal flex-shrink-0" />
                         <span className="truncate max-w-xs md:max-w-sm lg:max-w-md" title={bm.unifiedFolderPath.join(' > ')}>
                           {bm.unifiedFolderPath.join(' / ')}
                         </span>
@@ -341,7 +341,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                         <td key={file.id} className="py-3 px-4 text-center">
                           {isPresent ? (
                             <div
-                              className="inline-flex items-center gap-1 text-emerald-400 font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20"
+                              className="inline-flex items-center gap-1 text-acid-strong font-medium px-2 py-0.5 rounded-full bg-acid/10 border border-acid/20"
                               title={`Stored in: ${occurrence?.folderPath.join(' / ') || 'Root'}`}
                             >
                               <CheckCircle2 className="w-3 h-3" />
@@ -349,10 +349,10 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                             </div>
                           ) : (
                             <div
-                              className="inline-flex items-center gap-1 text-amber-400/80 font-medium px-2 py-0.5 rounded-full bg-amber-500/5 border border-amber-500/15"
+                              className="inline-flex items-center gap-1 text-amber font-medium px-2 py-0.5 rounded-full bg-amber/10 border border-amber/20"
                               title="Missing from this browser export"
                             >
-                              <XCircle className="w-3 h-3 text-amber-500" />
+                              <XCircle className="w-3 h-3 text-amber" />
                               <span className="text-[11px]">Missing</span>
                             </div>
                           )}
@@ -365,11 +365,12 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                       <button
                         type="button"
                         onClick={() => copyToClipboard(bm.canonicalUrl, bm.canonicalUrl)}
-                        className="p-1.5 text-slate-500 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+                        aria-label="Copy URL"
+                        className="p-1.5 text-ink-faint hover:text-ink hover:bg-surface-muted rounded-lg transition-colors cursor-pointer"
                         title="Copy URL"
                       >
                         {isCopied ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-acid-strong" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -381,7 +382,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
               {paginatedBookmarks.length === 0 && (
                 <tr>
-                  <td colSpan={files.length + 3} className="py-12 text-center text-slate-500">
+                  <td colSpan={files.length + 3} className="py-12 text-center text-ink-faint">
                     No bookmarks match the current filter or search query.
                   </td>
                 </tr>
@@ -392,7 +393,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="py-3 px-4 border-t border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs text-slate-400">
+          <div className="py-3 px-4 border-t border-ink/20 bg-surface-muted flex items-center justify-between text-xs text-ink-soft">
             <span>
               Showing {(currentPage - 1) * pageSize + 1} to{' '}
               {Math.min(currentPage * pageSize, filteredBookmarks.length)} of{' '}
@@ -404,18 +405,18 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                 type="button"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200"
+                className="px-2.5 py-1 rounded bg-surface hover:bg-surface-strong disabled:opacity-40 disabled:cursor-not-allowed text-ink transition-colors cursor-pointer"
               >
                 Previous
               </button>
-              <span className="px-2 font-mono">
+              <span className="px-2 font-mono text-ink">
                 {currentPage} / {totalPages}
               </span>
               <button
                 type="button"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200"
+                className="px-2.5 py-1 rounded bg-surface hover:bg-surface-strong disabled:opacity-40 disabled:cursor-not-allowed text-ink transition-colors cursor-pointer"
               >
                 Next
               </button>

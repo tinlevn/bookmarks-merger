@@ -67,7 +67,7 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
     return (
       <div
         key={bm.canonicalUrl}
-        className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-800/50 group transition-colors text-xs"
+        className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-surface-muted group transition-colors text-xs"
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {safeIcon ? (
@@ -78,7 +78,7 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
               onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
             />
           ) : (
-            <div className="w-4 h-4 rounded bg-slate-800 flex items-center justify-center text-[9px] text-slate-400 flex-shrink-0">
+            <div className="w-4 h-4 rounded bg-surface-muted flex items-center justify-center text-[9px] text-ink-faint flex-shrink-0">
               🔗
             </div>
           )}
@@ -89,21 +89,21 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
                 href={bm.canonicalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-200 hover:text-indigo-400 font-medium truncate inline-block"
+                className="text-ink hover:text-signal font-medium truncate inline-block"
                 title={bm.title}
               >
                 {bm.title}
               </a>
             ) : (
               <span
-                className="text-slate-300 font-medium truncate inline-block"
+                className="text-ink font-medium truncate inline-block"
                 title={bm.title}
               >
                 {bm.title}
               </span>
             )}
 
-            <span className="font-mono text-[10px] text-slate-500 truncate hidden sm:inline-block">
+            <span className="font-mono text-[10px] text-ink-faint truncate hidden sm:inline-block">
               {bm.canonicalUrl}
             </span>
           </div>
@@ -130,11 +130,12 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
           <button
             type="button"
             onClick={() => copyUrl(bm.canonicalUrl)}
-            className="p-1 text-slate-500 hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer"
+            aria-label="Copy URL"
+            className="p-1 text-ink-faint hover:text-ink opacity-0 group-hover:opacity-100 transition-opacity rounded cursor-pointer"
             title="Copy URL"
           >
             {isCopied ? (
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <Check className="w-3.5 h-3.5 text-acid-strong" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
@@ -163,38 +164,38 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
               toggleFolder(path);
             }
           }}
-          className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg cursor-pointer select-none transition-colors focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+          className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg cursor-pointer select-none transition-colors focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 ${
             level === 0
-              ? 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800'
-              : 'hover:bg-slate-800/60'
+              ? 'bg-surface-muted hover:bg-surface-strong border border-ink/20'
+              : 'hover:bg-surface-muted'
           }`}
           style={{ marginLeft: `${level * 16}px` }}
         >
           <div className="flex items-center gap-2 min-w-0">
             {isCollapsed ? (
-              <ChevronRight className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-ink-faint flex-shrink-0" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+              <ChevronDown className="w-3.5 h-3.5 text-ink-faint flex-shrink-0" />
             )}
 
             {isCollapsed ? (
-              <Folder className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+              <Folder className="w-4 h-4 text-signal flex-shrink-0" />
             ) : (
-              <FolderOpen className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+              <FolderOpen className="w-4 h-4 text-signal flex-shrink-0" />
             )}
 
-            <span className="font-semibold text-xs text-slate-200 truncate">
+            <span className="font-semibold text-xs text-ink truncate">
               {folder.title}
             </span>
 
             {folder.toolbarFolder && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan/15 text-cyan border border-cyan/30">
                 Bookmarks Bar / Toolbar
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+          <div className="flex items-center gap-2 text-[11px] text-ink-faint font-mono">
             {folder.subfolders.length > 0 && (
               <span>{folder.subfolders.length} subfolders</span>
             )}
@@ -217,14 +218,14 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
   };
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-4">
+    <div className="bg-surface border border-ink/20 rounded-lg p-4 space-y-4">
       {/* Tree Controls Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      <div className="flex items-center justify-between pb-3 border-b border-ink/20">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-ink">
             Unified Bookmark Hierarchy
           </h3>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink-faint">
             • Folders merged cleanly across all browsers
           </span>
         </div>
@@ -233,14 +234,14 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
           <button
             type="button"
             onClick={expandAll}
-            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+            className="text-xs text-ink-soft hover:text-ink px-2.5 py-1 rounded bg-surface-muted hover:bg-surface-strong transition-colors cursor-pointer"
           >
             Expand All
           </button>
           <button
             type="button"
             onClick={collapseAll}
-            className="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
+            className="text-xs text-ink-soft hover:text-ink px-2.5 py-1 rounded bg-surface-muted hover:bg-surface-strong transition-colors cursor-pointer"
           >
             Collapse All
           </button>
@@ -252,7 +253,7 @@ export const MergedTreeView: React.FC<MergedTreeViewProps> = ({ rootFolders, fil
         {rootFolders.map((root) => renderFolderNode(root, '', 0))}
 
         {rootFolders.length === 0 && (
-          <p className="text-xs text-slate-500 text-center py-8">
+          <p className="text-xs text-ink-faint text-center py-8">
             No folders or bookmarks loaded yet.
           </p>
         )}

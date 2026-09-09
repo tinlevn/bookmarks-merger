@@ -53,15 +53,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80"
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl space-y-5 p-6">
+      <div className="bg-surface border-2 border-ink/25 rounded-xl w-full max-w-lg overflow-hidden shadow-2xl space-y-5 p-6">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-ink/20 pb-4">
           <div className="flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-indigo-400" />
-            <h3 id="settings-modal-title" className="text-base font-semibold text-slate-100">
-              Merge & Normalization Settings
+            <Sliders className="w-5 h-5 text-signal" />
+            <h3 id="settings-modal-title" className="text-base font-semibold text-ink">
+              Reconciliation Rules
             </h3>
           </div>
 
@@ -69,7 +69,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close settings"
-            className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-ink-faint hover:text-ink rounded-lg hover:bg-surface-muted transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -89,21 +89,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleOption('unifyToolbars');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Unify Browser Toolbar Roots
               </p>
-              <p className="text-slate-400 mt-0.5">
+              <p className="text-ink-soft mt-0.5">
                 Merge "Bookmarks bar" (Chrome), "Favorites bar" (Edge), and "Bookmarks Toolbar" (Firefox) into a single unified Bookmarks Bar.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.unifyToolbars
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.unifyToolbars && <Check className="w-3.5 h-3.5" />}
@@ -122,23 +122,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleNormalize('stripTrackingParams');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Strip Marketing & Tracking Parameters
               </p>
-              <p className="text-slate-400 mt-0.5">
-                Removes tracking noise like <code className="text-indigo-300 font-mono">utm_*</code>,{' '}
-                <code className="text-indigo-300 font-mono">fbclid</code>, and{' '}
-                <code className="text-indigo-300 font-mono">ref</code> to detect real duplicates and output clean URLs.
+              <p className="text-ink-soft mt-0.5">
+                Removes tracking noise like <code className="text-cyan font-mono">utm_*</code>,{' '}
+                <code className="text-cyan font-mono">fbclid</code>, and{' '}
+                <code className="text-cyan font-mono">ref</code> to detect real duplicates and output clean URLs.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.normalize.stripTrackingParams
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.normalize.stripTrackingParams && <Check className="w-3.5 h-3.5" />}
@@ -157,22 +157,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleNormalize('trimTrailingSlash');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Normalize Trailing Slashes
               </p>
-              <p className="text-slate-400 mt-0.5">
-                Treats <code className="text-indigo-300 font-mono">site.com/</code> and{' '}
-                <code className="text-indigo-300 font-mono">site.com</code> as the same link.
+              <p className="text-ink-soft mt-0.5">
+                Treats <code className="text-cyan font-mono">site.com/</code> and{' '}
+                <code className="text-cyan font-mono">site.com</code> as the same link.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.normalize.trimTrailingSlash
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.normalize.trimTrailingSlash && <Check className="w-3.5 h-3.5" />}
@@ -191,21 +191,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleOption('preferNonEmptyTitle');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Prefer Descriptive Page Titles
               </p>
-              <p className="text-slate-400 mt-0.5">
+              <p className="text-ink-soft mt-0.5">
                 If one browser stored "GitHub" and another stored the full page title, picks the most informative title.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.preferNonEmptyTitle
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.preferNonEmptyTitle && <Check className="w-3.5 h-3.5" />}
@@ -224,21 +224,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleOption('preferHttps');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Prefer HTTPS Upgrades
               </p>
-              <p className="text-slate-400 mt-0.5">
-                If any browser has an <code className="text-indigo-300 font-mono">https://</code> version of a link, use HTTPS for the unified output.
+              <p className="text-ink-soft mt-0.5">
+                If any browser has an <code className="text-cyan font-mono">https://</code> version of a link, use HTTPS for the unified output.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.preferHttps
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.preferHttps && <Check className="w-3.5 h-3.5" />}
@@ -257,21 +257,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 toggleNormalize('ignoreProtocol');
               }
             }}
-            className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 cursor-pointer hover:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="flex items-start justify-between gap-4 p-3 rounded-lg bg-surface-muted border border-ink/15 cursor-pointer hover:border-ink/30 focus:outline-none focus-visible:outline-3 focus-visible:outline-cyan focus-visible:outline-offset-4 transition-colors"
           >
             <div>
-              <p className="font-semibold text-slate-200">
+              <p className="font-semibold text-ink">
                 Loose Protocol Matching (HTTP = HTTPS)
               </p>
-              <p className="text-slate-400 mt-0.5">
+              <p className="text-ink-soft mt-0.5">
                 Treats http:// and https:// versions of the same domain/path as duplicates.
               </p>
             </div>
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors flex-shrink-0 mt-0.5 ${
                 options.normalize.ignoreProtocol
-                  ? 'bg-indigo-600 border-indigo-500 text-white'
-                  : 'border-slate-700 bg-slate-900'
+                  ? 'bg-signal border-signal text-white'
+                  : 'border-ink/25 bg-surface'
               }`}
             >
               {options.normalize.ignoreProtocol && <Check className="w-3.5 h-3.5" />}
@@ -284,9 +284,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors cursor-pointer"
+            className="px-5 py-2 rounded bg-signal hover:bg-signal-hover text-white font-semibold text-xs shadow-[4px_4px_0_0_var(--color-ink)] hover:shadow-[6px_6px_0_0_var(--color-ink)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
           >
-            Apply & Close
+            Apply Rules
           </button>
         </div>
       </div>

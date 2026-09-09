@@ -1,24 +1,159 @@
 @import "tailwindcss";
+@import "./styles/fonts.css";
 
+/* ─────────────────────────────────────────────
+   ARCHIVE CONTROL — Design Tokens (Light Default)
+   ───────────────────────────────────────────── */
+@theme {
+  /* Surfaces */
+  --color-canvas: #E9E4D8;
+  --color-surface: #F8F5ED;
+  --color-surface-muted: #D9D4C8;
+  --color-surface-strong: #CCC5B7;
+
+  /* Ink */
+  --color-ink: #121B2D;
+  --color-ink-soft: #435064;
+  --color-ink-faint: #728096;
+
+  /* Signal (Primary Action — Orange) */
+  --color-signal: #FF5C35;
+  --color-signal-hover: #FF704E;
+  --color-signal-pressed: #C93B1D;
+
+  /* Status */
+  --color-acid: #CBEA38;
+  --color-acid-strong: #A9C82B;
+  --color-cyan: #00A6A6;
+  --color-cyan-soft: #BDE9E5;
+  --color-amber: #FFB84D;
+  --color-amber-soft: #FFF3D6;
+  --color-error: #C92A3D;
+  --color-error-soft: #F7CED3;
+
+  /* Browser identity (metadata only) */
+  --color-chrome: #4285F4;
+  --color-edge: #0C8CE9;
+  --color-firefox: #FF7139;
+  --color-vivaldi: #EF3939;
+  --color-brave: #FB542B;
+  --color-safari: #147EFB;
+  --color-opera: #FF1B2D;
+
+  /* Typography — Archive Control stack */
+  --font-display: "Chakra Petch", sans-serif;
+  --font-sans: "Instrument Sans", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Radii */
+  --radius-control: 0.25rem;
+  --radius-panel: 0.5rem;
+  --radius-dialog: 0.75rem;
+}
+
+/* ─────────────────────────────────────────────
+   NIGHT SHIFT — Dark Alternate
+   ───────────────────────────────────────────── */
+[data-theme="night"] {
+  /* Surfaces */
+  --color-canvas: #071014;
+  --color-surface: #0B171C;
+  --color-surface-muted: #102127;
+  --color-surface-strong: #13262C;
+
+  /* Ink */
+  --color-ink: #E6F7F5;
+  --color-ink-soft: #9AB8BC;
+  --color-ink-faint: #6E8A8F;
+
+  /* Signal (Orange adjusted for dark) */
+  --color-signal: #FF6A46;
+  --color-signal-hover: #FF8567;
+  --color-signal-pressed: #D94A2A;
+
+  /* Status (calibrated for dark) */
+  --color-acid: #D9F75A;
+  --color-acid-strong: #B7FF3C;
+  --color-cyan: #35E0D0;
+  --color-cyan-soft: #1D535A;
+  --color-amber: #FFB84D;
+  --color-amber-soft: #3D2E10;
+  --color-error: #FF5D73;
+  --color-error-soft: #54283A;
+
+  /* Typography — Night Shift stack */
+  --font-display: "Oxanium", "Rajdhani", system-ui, sans-serif;
+  --font-sans: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+/* ─────────────────────────────────────────────
+   Base Layer
+   ───────────────────────────────────────────── */
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white min-h-screen font-sans;
+    @apply bg-canvas text-ink antialiased selection:bg-signal selection:text-white min-h-screen font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Focus ring — universal 3px cyan outline */
+  :focus-visible {
+    outline: 3px solid var(--color-cyan);
+    outline-offset: 4px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-/* Custom scrollbar */
+/* ─────────────────────────────────────────────
+   Scrollbar (theme-aware)
+   ───────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: color-mix(in srgb, var(--color-canvas) 90%, var(--color-ink));
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: color-mix(in srgb, var(--color-ink) 25%, transparent);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+  background: color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+
+/* ─────────────────────────────────────────────
+   Engineering canvas grid (Archive Control only)
+   ───────────────────────────────────────────── */
+html:not([data-theme="night"]) body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--color-ink) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-ink) 4%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 24px 24px;
 }

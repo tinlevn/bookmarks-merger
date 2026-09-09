@@ -15,7 +15,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-amber-500/10',
     text: 'text-amber-400',
     border: 'border-amber-500/30',
-    accent: '#f59e0b',
+    accent: '#4285F4',
     dot: 'bg-amber-400',
   },
   edge: {
@@ -23,7 +23,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-cyan-500/10',
     text: 'text-cyan-400',
     border: 'border-cyan-500/30',
-    accent: '#06b6d4',
+    accent: '#0C8CE9',
     dot: 'bg-cyan-400',
   },
   firefox: {
@@ -31,7 +31,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-orange-500/10',
     text: 'text-orange-400',
     border: 'border-orange-500/30',
-    accent: '#f97316',
+    accent: '#FF7139',
     dot: 'bg-orange-400',
   },
   vivaldi: {
@@ -39,7 +39,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-rose-500/10',
     text: 'text-rose-400',
     border: 'border-rose-500/30',
-    accent: '#f43f5e',
+    accent: '#EF3939',
     dot: 'bg-rose-400',
   },
   opera: {
@@ -47,7 +47,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-red-500/10',
     text: 'text-red-400',
     border: 'border-red-500/30',
-    accent: '#ef4444',
+    accent: '#FF1B2D',
     dot: 'bg-red-400',
   },
   safari: {
@@ -55,7 +55,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-blue-500/10',
     text: 'text-blue-400',
     border: 'border-blue-500/30',
-    accent: '#3b82f6',
+    accent: '#147EFB',
     dot: 'bg-blue-400',
   },
   brave: {
@@ -63,7 +63,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-orange-600/10',
     text: 'text-orange-500',
     border: 'border-orange-600/30',
-    accent: '#ea580c',
+    accent: '#FB542B',
     dot: 'bg-orange-500',
   },
   other: {
@@ -71,7 +71,7 @@ export const BROWSER_THEMES: Record<BrowserType, BrowserTheme> = {
     bg: 'bg-indigo-500/10',
     text: 'text-indigo-400',
     border: 'border-indigo-500/30',
-    accent: '#6366f1',
+    accent: '#728096',
     dot: 'bg-indigo-400',
   },
 };

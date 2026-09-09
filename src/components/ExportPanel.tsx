@@ -84,16 +84,16 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
   return (
     <div className="space-y-6">
       {/* Primary Download Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/60 border border-indigo-500/30 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
+      <div className="relative overflow-hidden bg-signal/10 border-2 border-signal/30 rounded-lg p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg">
         <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-signal/15 border border-signal/30 text-signal text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
-            Ready to Export
+            ARCHIVE READY
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-            Download Unified Bookmarks ({totalUniqueUrls} Unique Links)
+          <h2 className="text-xl md:text-2xl font-bold text-ink tracking-tight">
+            Download Unified Archive ({totalUniqueUrls} Unique Links)
           </h2>
-          <p className="text-xs md:text-sm text-slate-300">
+          <p className="text-xs md:text-sm text-ink-soft">
             Compliant Netscape Bookmark HTML file preserving folder hierarchies,
             timestamps, and favicons. Ready to import directly into Chrome, Edge,
             Firefox, Vivaldi, Opera, or Safari.
@@ -104,25 +104,25 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={downloadUnifiedHtml}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded bg-signal hover:bg-signal-hover text-white font-semibold text-sm shadow-[4px_4px_0_0_var(--color-ink)] hover:shadow-[6px_6px_0_0_var(--color-ink)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            Download HTML
+            Download Archive
           </button>
 
           <button
             type="button"
             onClick={copyHtmlToClipboard}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700/60 transition-colors cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 rounded bg-surface-muted hover:bg-surface-strong text-ink font-medium text-sm border border-ink/20 transition-colors cursor-pointer"
           >
             {copiedHtml ? (
               <>
-                <Check className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-acid-strong" />
                 Copied HTML!
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4 text-slate-400" />
+                <Copy className="w-4 h-4 text-ink-soft" />
                 Copy HTML
               </>
             )}
@@ -131,12 +131,12 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
       </div>
 
       {/* Per-Browser Catch-up Exports */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+      <div className="bg-surface border border-ink/20 rounded-lg p-6 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-slate-200">
-            Per-Browser Catch-up HTML Files
+          <h3 className="text-sm font-semibold text-ink">
+            Per-Browser Catch-Up Exports
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-ink-soft mt-1">
             Want to sync your browsers without replacing everything? Download a dedicated file containing
             <strong> only the bookmarks that browser is missing</strong>, and import it into that browser.
           </p>
@@ -150,12 +150,12 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
             return (
               <div
                 key={file.id}
-                className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-3"
+                className="bg-surface-muted border border-ink/20 rounded-lg p-4 flex flex-col justify-between space-y-3"
               >
                 <div>
                   <BrowserBadge browser={file.browser} label={file.label} />
-                  <p className="text-xs text-slate-400 mt-2">
-                    Missing <strong className="text-amber-400">{missingCount}</strong> links compared to others
+                  <p className="text-xs text-ink-soft mt-2">
+                    Missing <strong className="text-amber">{missingCount}</strong> links compared to others
                   </p>
                 </div>
 
@@ -163,9 +163,9 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
                   type="button"
                   onClick={() => downloadCatchupFile(file.id)}
                   disabled={missingCount === 0}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-200 transition-colors cursor-pointer"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-strong disabled:opacity-40 disabled:cursor-not-allowed text-ink transition-colors cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5 text-indigo-400" />
+                  <Download className="w-3.5 h-3.5 text-signal" />
                   Catch-up for {file.label}
                 </button>
               </div>
@@ -176,39 +176,39 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
 
       {/* Additional Export Formats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-surface border border-ink/20 rounded-lg p-5 flex items-center justify-between">
           <div className="space-y-1">
-            <h4 className="text-sm font-medium text-slate-200 flex items-center gap-2">
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <h4 className="text-sm font-medium text-ink flex items-center gap-2">
+              <FileSpreadsheet className="w-4 h-4 text-acid-strong" />
               Spreadsheet CSV Matrix
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-soft">
               Export the full presence matrix for Excel or Google Sheets.
             </p>
           </div>
           <button
             type="button"
             onClick={downloadCsv}
-            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-strong text-ink border border-ink/20 transition-colors cursor-pointer"
           >
             Download CSV
           </button>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-surface border border-ink/20 rounded-lg p-5 flex items-center justify-between">
           <div className="space-y-1">
-            <h4 className="text-sm font-medium text-slate-200 flex items-center gap-2">
-              <FileJson className="w-4 h-4 text-cyan-400" />
+            <h4 className="text-sm font-medium text-ink flex items-center gap-2">
+              <FileJson className="w-4 h-4 text-cyan" />
               Machine-readable JSON
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-ink-soft">
               Full structured metadata and gap analysis report.
             </p>
           </div>
           <button
             type="button"
             onClick={downloadJson}
-            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-strong text-ink border border-ink/20 transition-colors cursor-pointer"
           >
             Download JSON
           </button>
@@ -216,11 +216,11 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
       </div>
 
       {/* Raw HTML Code Viewer */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-3">
+      <div className="bg-surface border border-ink/20 rounded-lg p-6 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileCode className="w-4 h-4 text-indigo-400" />
-            <h3 className="text-sm font-semibold text-slate-200">
+            <FileCode className="w-4 h-4 text-signal" />
+            <h3 className="text-sm font-semibold text-ink">
               Netscape Bookmark HTML Preview
             </h3>
           </div>
@@ -228,7 +228,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="text-xs text-indigo-400 hover:underline cursor-pointer"
+            className="text-xs text-signal hover:underline cursor-pointer"
           >
             {showPreview ? 'Hide Raw Code' : 'View Raw Code'}
           </button>
@@ -236,7 +236,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
 
         {showPreview && (
           <div className="relative">
-            <pre className="p-4 bg-slate-950 rounded-xl font-mono text-[11px] text-slate-300 overflow-x-auto max-h-96 border border-slate-800/80">
+            <pre className="p-4 bg-surface-muted rounded-lg font-mono text-[11px] text-ink-soft overflow-x-auto max-h-96 border border-ink/20">
               {mergedHtml}
             </pre>
           </div>

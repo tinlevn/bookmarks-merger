@@ -98,10 +98,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-6 md:p-8 text-center transition-all duration-200 ${
+        className={`relative group cursor-pointer border-2 border-dashed rounded-lg p-6 md:p-8 text-center transition-colors duration-200 ${
           isDragging
-            ? 'border-indigo-500 bg-indigo-500/10 scale-[1.01]'
-            : 'border-slate-800 hover:border-slate-700 bg-slate-900/40 hover:bg-slate-900/60'
+            ? 'border-cyan bg-cyan-soft scale-[1.01]'
+            : 'border-ink/25 hover:border-ink/40 bg-surface hover:bg-surface'
         }`}
       >
         <input
@@ -114,15 +114,15 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         />
 
         <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform duration-200">
+          <div className="w-14 h-14 rounded-lg bg-signal/15 border border-signal/30 flex items-center justify-center text-signal group-hover:scale-110 transition-transform duration-200">
             <UploadCloud className="w-7 h-7" />
           </div>
 
           <div>
-            <p className="text-base font-medium text-slate-200">
-              Drag & drop bookmark export files here, or <span className="text-indigo-400 hover:underline">browse</span>
+            <p className="text-base font-medium text-ink">
+              Drag & drop bookmark export files here, or <span className="text-signal hover:underline">browse</span>
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-ink-soft mt-1">
               Supports 2 to 4+ files from Chrome, Edge, Firefox, Vivaldi, Opera (.html or Chromium JSON)
             </p>
           </div>
@@ -134,7 +134,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                 e.stopPropagation();
                 onLoadDemo();
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-acid/15 text-acid-strong border border-acid/30 hover:bg-acid/25 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" />
               Load 4-Browser Demo (Chrome, Edge, Firefox, Vivaldi)
@@ -148,10 +148,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Loaded Files ({files.length})
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
+                Source Rack ({files.length})
               </h3>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-ink-faint">
                 • Click names to edit labels
               </span>
             </div>
@@ -159,7 +159,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             <button
               type="button"
               onClick={onClearAll}
-              className="text-xs text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-1"
+              className="text-xs text-error hover:text-error hover:underline flex items-center gap-1"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Clear all
@@ -173,7 +173,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               return (
                 <div
                   key={file.id}
-                  className="relative group bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition-colors shadow-sm"
+                  className="relative group bg-surface border border-ink/20 rounded-lg p-3.5 flex flex-col justify-between hover:border-ink/30 transition-colors shadow-sm"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
@@ -181,8 +181,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                       <button
                         type="button"
                         onClick={() => onRemoveFile(file.id)}
+                        aria-label="Remove file"
                         title="Remove file"
-                        className="text-slate-500 hover:text-rose-400 p-1 rounded-md hover:bg-rose-500/10 transition-colors"
+                        className="text-ink-faint hover:text-error p-1 rounded-md hover:bg-error/10 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -199,12 +200,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                             if (e.key === 'Escape') setEditingId(null);
                           }}
                           autoFocus
-                          className="w-full text-xs px-2 py-1 bg-slate-950 border border-indigo-500/50 rounded text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          className="w-full text-xs px-2 py-1 bg-surface-muted border border-ink/25 rounded text-ink focus:outline-none focus:ring-1 focus:ring-cyan"
                         />
                         <button
                           type="button"
                           onClick={() => saveEditing(file.id)}
-                          className="p-1 text-emerald-400 hover:bg-emerald-500/10 rounded"
+                          aria-label="Save label"
+                          className="p-1 text-acid-strong hover:bg-acid/10 rounded"
                         >
                           <Check className="w-3.5 h-3.5" />
                         </button>
@@ -214,21 +216,21 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                         onClick={() => startEditing(file)}
                         className="cursor-pointer group/title flex items-center justify-between"
                       >
-                        <p className="text-sm font-medium text-slate-200 truncate" title={file.label}>
+                        <p className="text-sm font-medium text-ink truncate" title={file.label}>
                           {file.label}
                         </p>
-                        <Edit2 className="w-3 h-3 text-slate-500 opacity-0 group-hover/title:opacity-100 transition-opacity ml-1 flex-shrink-0" />
+                        <Edit2 className="w-3 h-3 text-ink-faint opacity-0 group-hover/title:opacity-100 transition-opacity ml-1 flex-shrink-0" />
                       </div>
                     )}
 
-                    <p className="text-xs text-slate-500 truncate" title={file.filename}>
+                    <p className="text-xs text-ink-faint truncate" title={file.filename}>
                       {file.filename}
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                  <div className="pt-3 mt-2 border-t border-ink/20 flex items-center justify-between text-xs text-ink-soft">
                     <span>{file.allBookmarks.length} bookmarks</span>
-                    <span className="text-slate-500 font-mono">
+                    <span className="text-ink-faint font-mono">
                       {file.uniqueUrlCount} unique
                     </span>
                   </div>

@@ -26,10 +26,18 @@ export const BrowserBadge: React.FC<BrowserBadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full border ${theme.bg} ${theme.text} ${theme.border} ${sizeClasses[size]}`}
+      className={`inline-flex items-center font-medium rounded-full border ${sizeClasses[size]}`}
+      style={{
+        color: theme.accent,
+        borderColor: `${theme.accent}40`,
+        backgroundColor: `${theme.accent}15`,
+      }}
       title={displayText}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${theme.dot}`} />
+      <span
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ backgroundColor: theme.accent }}
+      />
       {showLabel && <span className="truncate max-w-[140px]">{displayText}</span>}
     </span>
   );
