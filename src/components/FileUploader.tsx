@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { UploadCloud, Trash2, Sparkles, Edit2, Check } from 'lucide-react';
 import type { ParsedBookmarkFile } from '../core/types';
 import { BrowserBadge } from './BrowserBadge';
+import { getDynamicGridCols } from '../core/constants';
 
 interface FileUploaderProps {
   files: ParsedBookmarkFile[];
@@ -165,7 +166,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className={`grid gap-3 ${getDynamicGridCols(files.length)}`}>
             {files.map((file) => {
               const isEditing = editingId === file.id;
 

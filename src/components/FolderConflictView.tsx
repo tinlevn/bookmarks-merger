@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertCircle, Folder, ExternalLink } from 'lucide-react';
 import type { ConflictingLocation, UnifiedBookmark } from '../core/types';
 import { isSafeWebUrl } from '../utils/security';
+import { getDynamicGridCols } from '../core/constants';
 
 interface FolderConflictViewProps {
   conflicts: ConflictingLocation[];
@@ -86,7 +87,7 @@ export const FolderConflictView: React.FC<FolderConflictViewProps> = ({
               </div>
 
               {/* Locations comparison */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2 border-t border-slate-800/80">
+              <div className={`grid gap-2 pt-2 border-t border-slate-800/80 ${getDynamicGridCols(conflict.paths.length)}`}>
                 {conflict.paths.map((p, idx) => (
                   <div
                     key={idx}

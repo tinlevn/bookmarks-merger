@@ -11,6 +11,7 @@ import {
 import type { GapAnalysisResult, MergedFolderNode } from '../core/types';
 import { serializeNetscapeHtml } from '../core/serializer';
 import { BrowserBadge } from './BrowserBadge';
+import { getDynamicGridCols } from '../core/constants';
 import {
   triggerBlobDownload,
   exportCatchupBlob,
@@ -141,7 +142,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className={`grid gap-3 ${getDynamicGridCols(files.length)}`}>
           {files.map((file) => {
             const stats = analysis.perFileStats[file.id];
             const missingCount = stats ? stats.missingCount : 0;

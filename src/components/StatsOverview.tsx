@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers, Bookmark, Share2, AlertCircle, ArrowUpRight } from 'lucide-react';
 import type { GapAnalysisResult } from '../core/types';
 import { BrowserBadge } from './BrowserBadge';
+import { getDynamicGridCols } from '../core/constants';
 
 interface StatsOverviewProps {
   analysis: GapAnalysisResult;
@@ -75,7 +76,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       </div>
 
       {/* Per-Browser Coverage Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className={`grid gap-3 ${getDynamicGridCols(files.length)}`}>
         {files.map((file) => {
           const stats = perFileStats[file.id];
           if (!stats) return null;

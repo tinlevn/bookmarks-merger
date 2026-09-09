@@ -91,7 +91,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Search Bar */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 max-w-md lg:max-w-xl">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
@@ -253,16 +253,16 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4 min-w-[280px]">Bookmark & URL</th>
-                <th className="py-3 px-4 min-w-[180px]">Target Folder</th>
+                <th className="py-3.5 px-4 min-w-[300px] w-2/5">Bookmark & URL</th>
+                <th className="py-3.5 px-4 min-w-[200px] w-1/4">Target Folder</th>
                 {files.map((file) => (
-                  <th key={file.id} className="py-3 px-4 text-center min-w-[120px]">
-                    <span className="truncate block max-w-[140px] mx-auto">
+                  <th key={file.id} className="py-3.5 px-4 text-center min-w-[130px] whitespace-nowrap">
+                    <span className="truncate block max-w-[160px] mx-auto">
                       {file.label}
                     </span>
                   </th>
                 ))}
-                <th className="py-3 px-4 text-right min-w-[80px]">Actions</th>
+                <th className="py-3.5 px-4 text-right min-w-[70px] w-16">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
@@ -304,7 +304,7 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2 font-mono text-[11px] text-slate-500">
-                          <span className="truncate max-w-[340px]" title={bm.canonicalUrl}>
+                          <span className="truncate max-w-sm md:max-w-md lg:max-w-xl xl:max-w-3xl" title={bm.canonicalUrl}>
                             {bm.canonicalUrl}
                           </span>
                           {safeWeb && (
@@ -323,10 +323,10 @@ export const GapMatrixView: React.FC<GapMatrixViewProps> = ({
                     </td>
 
                     {/* Unified Folder Path */}
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 min-w-[200px]">
                       <div className="flex items-center gap-1.5 text-slate-400">
                         <Folder className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-                        <span className="truncate max-w-[200px]" title={bm.unifiedFolderPath.join(' > ')}>
+                        <span className="truncate max-w-xs md:max-w-sm lg:max-w-md" title={bm.unifiedFolderPath.join(' > ')}>
                           {bm.unifiedFolderPath.join(' / ')}
                         </span>
                       </div>
