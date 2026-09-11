@@ -28,7 +28,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
             <Bookmark className="w-4 h-4 text-signal" />
           </div>
           <div className="mt-3">
-            <span className="text-2xl md:text-3xl font-bold text-ink font-display font-mono tracking-tight">
+            <span className="text-2xl md:text-3xl font-bold text-ink font-display tracking-tight">
               {totalUniqueUrls}
             </span>
             <span className="text-xs text-ink-soft ml-2">links</span>
@@ -41,7 +41,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
             <Layers className="w-4 h-4 text-acid-strong" />
           </div>
           <div className="mt-3">
-            <span className="text-2xl md:text-3xl font-bold text-ink font-display font-mono tracking-tight">
+            <span className="text-2xl md:text-3xl font-bold text-ink font-display tracking-tight">
               {totalRawItems}
             </span>
             <span className="text-xs text-ink-soft ml-2">across {files.length} files</span>
@@ -54,7 +54,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
             <Share2 className="w-4 h-4 text-amber" />
           </div>
           <div className="mt-3">
-            <span className="text-2xl md:text-3xl font-bold text-ink font-display font-mono tracking-tight">
+            <span className="text-2xl md:text-3xl font-bold text-ink font-display tracking-tight">
               {overlapRate.toFixed(1)}%
             </span>
             <span className="text-xs text-ink-soft ml-2">shared in 2+</span>
@@ -67,7 +67,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
             <AlertCircle className="w-4 h-4 text-amber" />
           </div>
           <div className="mt-3">
-            <span className="text-2xl md:text-3xl font-bold text-ink font-display font-mono tracking-tight">
+            <span className="text-2xl md:text-3xl font-bold text-ink font-display tracking-tight">
               {conflictingLocations.length}
             </span>
             <span className="text-xs text-ink-soft ml-2">reconciled</span>

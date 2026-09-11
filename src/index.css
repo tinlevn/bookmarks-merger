@@ -49,22 +49,25 @@
   --radius-control: 0.25rem;
   --radius-panel: 0.5rem;
   --radius-dialog: 0.75rem;
+
+  /* Shadow — adapts per theme (overridden in night block) */
+  --color-shadow: #121B2D;
 }
 
 /* ─────────────────────────────────────────────
    NIGHT SHIFT — Dark Alternate
    ───────────────────────────────────────────── */
 [data-theme="night"] {
-  /* Surfaces */
+  /* Surfaces — wider ladder so surface-strong reads distinct */
   --color-canvas: #071014;
   --color-surface: #0B171C;
   --color-surface-muted: #102127;
-  --color-surface-strong: #13262C;
+  --color-surface-strong: #1A2F38;
 
-  /* Ink */
+  /* Ink — ink-faint raised to clear WCAG AA on small text */
   --color-ink: #E6F7F5;
   --color-ink-soft: #9AB8BC;
-  --color-ink-faint: #6E8A8F;
+  --color-ink-faint: #88A8AD;
 
   /* Signal (Orange adjusted for dark) */
   --color-signal: #FF6A46;
@@ -72,14 +75,18 @@
   --color-signal-pressed: #D94A2A;
 
   /* Status (calibrated for dark) */
-  --color-acid: #D9F75A;
-  --color-acid-strong: #B7FF3C;
+  /* Acid desaturated so it doesn't scorch — reserve full-bright for single glyph accents */
+  --color-acid: #C5E850;
+  --color-acid-strong: #9ED430;
   --color-cyan: #35E0D0;
   --color-cyan-soft: #1D535A;
   --color-amber: #FFB84D;
   --color-amber-soft: #3D2E10;
   --color-error: #FF5D73;
   --color-error-soft: #54283A;
+
+  /* Shadow — deep teal instead of near-white ink on dark buttons */
+  --color-shadow: #1D535A;
 
   /* Typography — Night Shift stack */
   --font-display: "Oxanium", "Rajdhani", system-ui, sans-serif;
@@ -92,7 +99,7 @@
    ───────────────────────────────────────────── */
 @layer base {
   body {
-    @apply bg-canvas text-ink antialiased selection:bg-signal selection:text-white min-h-screen font-sans;
+    @apply bg-canvas text-ink antialiased selection:bg-signal selection:text-ink min-h-screen font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -156,4 +163,22 @@ html:not([data-theme="night"]) body::before {
       transparent 1px
     );
   background-size: 24px 24px;
+}
+
+/* ─────────────────────────────────────────────
+   Night Shift CRT scan-line texture
+   ───────────────────────────────────────────── */
+[data-theme="night"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-cyan) 3%, transparent) 0px,
+    color-mix(in srgb, var(--color-cyan) 3%, transparent) 1px,
+    transparent 1px,
+    transparent 3px
+  );
 }

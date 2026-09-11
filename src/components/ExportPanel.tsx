@@ -104,7 +104,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({ analysis, mergedTree }
           <button
             type="button"
             onClick={downloadUnifiedHtml}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded bg-signal hover:bg-signal-hover text-white font-semibold text-sm shadow-[4px_4px_0_0_var(--color-ink)] hover:shadow-[6px_6px_0_0_var(--color-ink)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded bg-signal hover:bg-signal-hover text-white font-semibold text-sm shadow-[4px_4px_0_0_var(--color-shadow)] hover:shadow-[6px_6px_0_0_var(--color-shadow)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
           >
             <Download className="w-4 h-4" />
             Download Archive

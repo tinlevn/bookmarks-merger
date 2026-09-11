@@ -106,10 +106,10 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-40 bg-canvas/90 backdrop-blur-md border-b border-ink/20">
+      <header className="sticky top-0 z-40 bg-canvas/95 border-b border-ink/20">
         <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-signal text-white flex items-center justify-center shadow-[2px_2px_0_0_var(--color-ink)] border border-ink">
+            <div className="w-10 h-10 rounded-lg bg-signal text-white flex items-center justify-center shadow-[2px_2px_0_0_var(--color-shadow)] border border-ink">
               <Bookmark className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -291,7 +291,7 @@ export const App: React.FC = () => {
             <button
               type="button"
               onClick={handleLoadDemo}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded bg-signal hover:bg-signal-hover text-white text-xs font-semibold shadow-[4px_4px_0_0_var(--color-ink)] hover:shadow-[6px_6px_0_0_var(--color-ink)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded bg-signal hover:bg-signal-hover text-white text-xs font-semibold shadow-[4px_4px_0_0_var(--color-shadow)] hover:shadow-[6px_6px_0_0_var(--color-shadow)] hover:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-none transition-[transform,box-shadow,background-color] cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
               Load Sample Sources
